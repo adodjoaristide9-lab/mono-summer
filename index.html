@@ -1124,8 +1124,18 @@ async function publishAnn(){
   const t=v('aant'),d=v('aand');if(!t||!d)return alert('Titre et date requis.');
   const file=g('aanimg').files[0];
   const imgUrl=file?await uploadImg(file,'annonces','ldann'):null;
-  await sb.from('annonces').insert({title:t,date:d,description:v('aandesc'),image_url:imgUrl,is_breaking:g('abrk').checked,created_by:currentUser?.id});
-  await renderAnn();sv('aant','');sv('aand','');sv('aandesc','');g('aanimg').value='';g('prevann').style.display='none';g('abrk').checked=false;flash('okann');
+  const{error}=await sb.from('annonces').insert({
+    title:t,
+    date:d,
+    description:v('aandesc'),
+    image_url:imgUrl,
+    is_breaking:g('abrk').checked
+  });
+  if(error){alert('Erreur: '+error.message);return;}
+  await renderAnn();
+  sv('aant','');sv('aand','');sv('aandesc','');
+  g('aanimg').value='';g('prevann').style.display='none';g('abrk').checked=false;
+  flash('okann');
 }
 async function delAnn(id){await sb.from('annonces').delete().eq('id',id);await renderAnn();}
 async function addVille(){
