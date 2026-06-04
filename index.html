@@ -439,14 +439,56 @@ select.fc option{background:var(--dark3);}
 .btn-export{background:none;border:1px solid rgba(0,255,136,.2);color:var(--neon);padding:8px 20px;font-family:var(--fb);font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .3s;}
 .btn-export:hover{background:rgba(0,255,136,.08);}
 
+/* BOTTOM NAV MOBILE */
+#bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:990;
+  background:rgba(3,3,3,.97);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(0,255,136,.08);
+  padding:8px 0 env(safe-area-inset-bottom,8px);
+}
+.bnav-items{display:flex;justify-content:space-around;align-items:center;}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;text-decoration:none;color:rgba(240,240,240,.35);transition:color .3s;border:none;background:none;cursor:pointer;min-width:56px;}
+.bnav-item.active,.bnav-item:hover{color:var(--neon);}
+.bnav-icon{font-size:20px;line-height:1;}
+.bnav-lbl{font-size:8px;letter-spacing:1px;text-transform:uppercase;font-family:var(--fb);}
+
+/* Réactions annonces */
+.reactions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.react-btn{background:var(--dark3);border:1px solid rgba(240,240,240,.07);color:rgba(240,240,240,.5);padding:4px 10px;font-size:11px;cursor:none;transition:all .3s;display:flex;align-items:center;gap:4px;border-radius:20px;}
+.react-btn:hover,.react-btn.reacted{border-color:var(--neon);color:var(--white);background:rgba(0,255,136,.08);}
+.react-count{font-size:10px;font-family:var(--fb);}
+
+/* FAQ */
+#faq{background:var(--dark);}
+.faq-item{border-bottom:1px solid rgba(240,240,240,.05);}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:18px 0;cursor:none;transition:color .3s;}
+.faq-q:hover{color:var(--neon);}
+.faq-q-txt{font-family:var(--fb);font-size:14px;font-weight:600;}
+.faq-icon{font-size:18px;transition:transform .3s;color:var(--neon);flex-shrink:0;}
+.faq-item.open .faq-icon{transform:rotate(45deg);}
+.faq-a{font-family:var(--fh);font-size:14px;color:rgba(240,240,240,.45);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:16px;}
+
+/* CAPTCHA newsletter */
+.captcha-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.captcha-q{font-family:var(--fb);font-size:13px;color:rgba(240,240,240,.6);}
+.captcha-inp{width:60px;background:var(--dark2);border:1px solid rgba(0,255,136,.15);color:var(--white);padding:8px 10px;font-family:var(--fb);font-size:13px;outline:none;text-align:center;}
+.captcha-inp:focus{border-color:var(--neon);}
+
+/* Pull to refresh */
+#ptr{position:fixed;top:0;left:0;right:0;z-index:9996;height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:height .3s;background:rgba(3,3,3,.9);}
+#ptr.show{height:52px;}
+.ptr-icon{font-size:20px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
 /* RESPONSIVE */
 @media(max-width:768px){
   nav{padding:12px 16px;}
   .nav-center,.vis-wrap,.btn-cnx{display:none;}
   .hamburger{display:flex;}
-  #hero{padding:0 16px 48px;}
-  .sec,#countdown,#teaser,#locked-sec,#newsletter,#galerie,#socials,#sponsors{padding:48px 16px;}
-  footer{padding:24px 16px;flex-direction:column;text-align:center;}
+  #hero{padding:0 16px 120px;}
+  .sec,#countdown,#teaser,#locked-sec,#newsletter,#galerie,#socials,#sponsors,#faq{padding:48px 16px;}
+  footer{padding:24px 16px 80px;flex-direction:column;text-align:center;}
   .atop{padding:10px 14px;}
   .abody{padding:12px 12px 48px;}
   .frow{grid-template-columns:1fr;}
@@ -456,6 +498,7 @@ select.fc option{background:var(--dark3);}
   .agrid{grid-template-columns:1fr;}
   .socbtn{min-width:95px;padding:18px 14px;}
   .cdgrid{gap:0;}
+  #bottom-nav{display:block;}
 }
 @media(max-width:380px){
   .vgrid{grid-template-columns:repeat(2,minmax(120px,1fr));}
@@ -581,6 +624,10 @@ select.fc option{background:var(--dark3);}
   <div class="nlwrap reveal">
     <h2 class="nltitle" id="nltitle">SOIS LE PREMIER<br>À SAVOIR</h2>
     <p class="nlsub" id="nlsub">abonne-toi pour ne rien manquer. le Mono Summer arrive et tu dois en faire partie.</p>
+    <div class="captcha-wrap">
+      <span class="captcha-q" id="captcha-q">-- + -- = ?</span>
+      <input type="number" class="captcha-inp" id="captcha-ans" placeholder="?">
+    </div>
     <div class="nlform">
       <input type="email" class="nlinp" id="nlemail" placeholder="ton adresse email…">
       <button class="nlbtn" id="nlbtn" onclick="nlSubmit()">S'abonner</button>
@@ -621,6 +668,16 @@ select.fc option{background:var(--dark3);}
       <span class="socname">WhatsApp</span><span class="sochandle" id="wah">Canal Officiel</span>
     </a>
   </div>
+</section>
+
+<!-- PULL TO REFRESH -->
+<div id="ptr"><span class="ptr-icon">🔄</span></div>
+
+<!-- FAQ -->
+<section id="faq" class="sec" style="display:none;">
+  <div class="stag reveal">Questions fréquentes</div>
+  <h2 class="stitle reveal">FAQ</h2>
+  <div id="faq-list"></div>
 </section>
 
 <footer>
@@ -703,6 +760,7 @@ select.fc option{background:var(--dark3);}
       <button class="atab" onclick="tab('tnl',this)">📧 Newsletter</button>
       <button class="atab" onclick="tab('tsp',this)">🤝 Sponsors</button>
       <button class="atab" onclick="tab('tsoc',this)">📱 Réseaux</button>
+      <button class="atab" onclick="tab('tfaq',this)">❓ FAQ</button>
       <button class="atab" onclick="tab('tsite',this)">⚙️ Site</button>
       <button class="atab" id="tteam-tab" onclick="tab('tteam',this)">👥 Équipe</button>
       <button class="atab" onclick="tab('tanalytics',this)">📊 Analytics</button>
@@ -953,6 +1011,18 @@ select.fc option{background:var(--dark3);}
       </div>
     </div>
   
+    <!-- FAQ -->
+    <div class="tp" id="tfaq">
+      <div class="panel">
+        <div class="pt"><em>❓</em> Ajouter une question FAQ</div>
+        <div class="okmsg" id="okfaq">✅ Question ajoutée !</div>
+        <div class="fg"><label class="fl2">Question</label><input class="fc" id="afaqq" placeholder="Ex: Comment venir à l'événement ?"></div>
+        <div class="fg"><label class="fl2">Réponse</label><textarea class="fc" id="afaqa" placeholder="La réponse…"></textarea></div>
+        <button class="bta" onclick="addFaq()">Ajouter</button>
+      </div>
+      <div class="panel"><div class="pt"><em>📋</em> Questions</div><div class="alist" id="faqlist"></div></div>
+    </div>
+
     <!-- ANALYTICS -->
     <div class="tp" id="tanalytics">
       <div class="analytics-grid" id="ana-grid">
@@ -1011,6 +1081,17 @@ select.fc option{background:var(--dark3);}
   <div style="font-size:48px;">🔧</div>
   <div class="maint-title">MONO<em>.</em>SUMMER</div>
   <div class="maint-sub" id="maint-msg-display">Site en maintenance. Revenez bientôt…</div>
+</div>
+
+<!-- BOTTOM NAV MOBILE -->
+<div id="bottom-nav">
+  <div class="bnav-items">
+    <a href="#" class="bnav-item active" onclick="bnav(this,'#')"><span class="bnav-icon">🏠</span><span class="bnav-lbl">Accueil</span></a>
+    <a href="#annonces" class="bnav-item" onclick="bnav(this,'#annonces')"><span class="bnav-icon">📢</span><span class="bnav-lbl">Annonces</span></a>
+    <a href="#galerie" class="bnav-item" onclick="bnav(this,'#galerie')"><span class="bnav-icon">📸</span><span class="bnav-lbl">Galerie</span></a>
+    <a href="#socials" class="bnav-item" onclick="bnav(this,'#socials')"><span class="bnav-icon">🌍</span><span class="bnav-lbl">Réseaux</span></a>
+    <button class="bnav-item" onclick="openAuth()"><span class="bnav-icon">👤</span><span class="bnav-lbl">Connexion</span></button>
+  </div>
 </div>
 
 <script>
@@ -1636,9 +1717,23 @@ async function inviteAdmin(){
 
 // ══ NEWSLETTER ════════════════════════════════════
 async function nlSubmit(){
-  const email=g('nlemail').value.trim();if(!email||!email.includes('@'))return;
+  const email=g('nlemail').value.trim();
+  if(!email||!email.includes('@'))return alert('Email invalide.');
+  // Vérification CAPTCHA
+  const ans=parseInt(g('captcha-ans')?.value||'0');
+  if(ans!==captchaA+captchaB){
+    alert('❌ Réponse incorrecte. Réessaye.');genCaptcha();return;
+  }
   const{error}=await sb.from('newsletter').insert({email});
-  if(!error){sv('nlemail','');const ok=g('nlok');ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),4000);}
+  if(error){
+    if(error.code==='23505'){alert('Cet email est déjà inscrit !');}
+    else{alert('Erreur: '+error.message);}
+    genCaptcha();return;
+  }
+  sv('nlemail','');genCaptcha();
+  const ok=g('nlok');ok.classList.add('show');
+  setTimeout(()=>ok.classList.remove('show'),4000);
+  addLog('action','Nouvel abonné newsletter: '+email);
 }
 
 // ══ SHARE ═════════════════════════════════════════
@@ -1675,6 +1770,8 @@ window.addEventListener('load',async()=>{
   incVisitors();
   animateTitle();
   checkAnnHash();
+  genCaptcha();
+  renderFaq();
 });
 </script>
 </body>
