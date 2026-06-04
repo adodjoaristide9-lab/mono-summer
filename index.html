@@ -39,19 +39,7 @@ body.ch #cur-r{width:50px;height:50px;border-color:rgba(0,255,136,.6);}
 /* PROGRESS */
 #prog{position:fixed;top:0;left:0;height:2px;background:var(--neon);box-shadow:0 0 8px var(--neon);z-index:9997;width:0;}
 
-/* SPLASH */
-#splash{position:fixed;inset:0;z-index:99990;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .8s,visibility .8s;}
-#splash.out{opacity:0;visibility:hidden;pointer-events:none;}
-.sp-logo{font-family:var(--ft);font-size:clamp(38px,10vw,100px);line-height:.9;text-align:center;font-weight:900;letter-spacing:-2px;}
-.sp-logo em{color:var(--neon);font-style:normal;display:block;text-shadow:0 0 50px rgba(0,255,136,.4);}
-.sp-tag{font-family:var(--fh);font-size:clamp(14px,3vw,20px);color:rgba(240,240,240,.4);text-align:center;}
-.sp-bar{width:130px;height:1px;background:var(--dark3);overflow:hidden;}
-.sp-fill{height:100%;width:0;background:var(--neon);animation:spfill 2.8s ease forwards;}
-@keyframes spfill{to{width:100%;}}
-.sp-dots{display:flex;gap:6px;}
-.sp-dot{width:3px;height:3px;border-radius:50%;background:var(--neon);animation:sdot 1.2s ease-in-out infinite;}
-.sp-dot:nth-child(2){animation-delay:.2s;}.sp-dot:nth-child(3){animation-delay:.4s;}
-@keyframes sdot{0%,100%{opacity:.2;transform:scale(1);}50%{opacity:1;transform:scale(1.5);}}
+
 
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;transition:all .3s;}
@@ -511,14 +499,7 @@ select.fc option{background:var(--dark3);}
 <div id="cur"></div><div id="cur-r"></div>
 <div id="prog"></div>
 
-<!-- SPLASH -->
-<div id="splash">
-  <span style="font-size:34px;animation:eblink 4s infinite;">👁️</span>
-  <div class="sp-logo">MONO<em>SUMMER</em></div>
-  <div class="sp-tag">le Mono cache bien son jeu…</div>
-  <div class="sp-bar"><div class="sp-fill"></div></div>
-  <div class="sp-dots"><div class="sp-dot"></div><div class="sp-dot"></div><div class="sp-dot"></div></div>
-</div>
+
 
 <!-- NAV -->
 <nav id="nav">
@@ -984,10 +965,7 @@ select.fc option{background:var(--dark3);}
         <div class="fg"><label class="fl2">Texte footer</label><input class="fc" id="aft"></div>
         <div class="fg"><label class="fl2">Compteur visiteurs</label><input type="number" class="fc" id="avis"></div>
       </div>
-      <div class="trow">
-        <div><div class="tlbl">Splash Screen</div><div class="tdesc">Écran d'intro au chargement</div></div>
-        <label class="tog"><input type="checkbox" id="asplash" checked><span class="tsl"></span></label>
-      </div>
+
       <div class="trow">
         <div><div class="tlbl">Easter Egg (tape MONO)</div></div>
         <label class="tog"><input type="checkbox" id="aee" checked><span class="tsl"></span></label>
@@ -1691,7 +1669,7 @@ async function addSp(){
 }
 async function delSp(id){await sb.from('sponsors').delete().eq('id',id);await renderSp();}
 async function saveSoc(){await Promise.all([setConfig('fb_url',v('afbu')),setConfig('fb_handle',v('afbh')),setConfig('tk_url',v('atku')),setConfig('tk_handle',v('atkh')),setConfig('wa_url',v('awau')),setConfig('wa_handle',v('awah'))]);applyConfig();flash('oksoc');}
-async function saveSite(){const vis=parseInt(g('avis').value)||2847;await Promise.all([setConfig('footer_copy',v('aft')),setConfig('visitors',String(vis)),setConfig('splash_active',g('asplash').checked?'true':'false'),setConfig('easter_active',g('aee').checked?'true':'false')]);applyConfig();flash('oksite');}
+async function saveSite(){const vis=parseInt(g('avis').value)||2847;await Promise.all([setConfig('footer_copy',v('aft')),setConfig('visitors',String(vis)),setConfig('easter_active',g('aee').checked?'true':'false')]);applyConfig();flash('oksite');}
 
 // ══ INVITE ════════════════════════════════════════
 async function inviteAdmin(){
@@ -1762,15 +1740,9 @@ async function incVisitors(){
 
 // ══ INIT ══════════════════════════════════════════
 window.addEventListener('load',async()=>{
-  // Forcer la disparition du splash après 4s max
-  const hideSplash=()=>{const sp=g('splash');if(sp){sp.classList.add('out');setTimeout(()=>sp.style.display='none',800);}};
-  setTimeout(hideSplash, 4000);
-
   try {
     await loadConfig();
   } catch(e){ console.error('loadConfig error:',e); }
-
-  hideSplash();
 
   try { await renderAnn(); } catch(e){ console.error('renderAnn:',e); }
   try { await renderVilles(); } catch(e){ console.error('renderVilles:',e); }
