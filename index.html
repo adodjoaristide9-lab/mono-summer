@@ -1762,16 +1762,28 @@ async function incVisitors(){
 
 // ══ INIT ══════════════════════════════════════════
 window.addEventListener('load',async()=>{
-  setTimeout(()=>{const sp=g('splash');sp.classList.add('out');setTimeout(()=>sp.style.display='none',800);},3200);
-  await loadConfig();
-  await Promise.all([renderAnn(),renderVilles(),renderSp(),renderGalerie()]);
-  updateCD();setInterval(updateCD,1000);
+  // Forcer la disparition du splash après 4s max
+  const hideSplash=()=>{const sp=g('splash');if(sp){sp.classList.add('out');setTimeout(()=>sp.style.display='none',800);}};
+  setTimeout(hideSplash, 4000);
+
+  try {
+    await loadConfig();
+  } catch(e){ console.error('loadConfig error:',e); }
+
+  hideSplash();
+
+  try { await renderAnn(); } catch(e){ console.error('renderAnn:',e); }
+  try { await renderVilles(); } catch(e){ console.error('renderVilles:',e); }
+  try { await renderSp(); } catch(e){ console.error('renderSp:',e); }
+  try { await renderGalerie(); } catch(e){ console.error('renderGalerie:',e); }
+
+  updateCD(); setInterval(updateCD,1000);
   watchReveal();
-  incVisitors();
-  animateTitle();
+  try { incVisitors(); } catch(e){}
+  try { animateTitle(); } catch(e){}
   checkAnnHash();
   genCaptcha();
-  renderFaq();
+  try { renderFaq(); } catch(e){}
 });
 </script>
 </body>
