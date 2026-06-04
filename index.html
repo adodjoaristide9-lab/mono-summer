@@ -402,6 +402,42 @@ select.fc option{background:var(--dark3);}
 .noise{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:128px;}
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
 .reveal.in{opacity:1;transform:translateY(0);}
+/* Rich text */
+.richtext-toolbar{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;}
+.rtb{background:var(--dark3);border:1px solid rgba(0,255,136,.1);color:var(--white);padding:4px 10px;font-size:12px;cursor:pointer;transition:all .3s;font-family:var(--fb);}
+.rtb:hover{border-color:var(--neon);color:var(--neon);}
+.richtext-editor{word-break:break-word;line-height:1.7;}
+.richtext-editor:empty::before{content:attr(placeholder);color:var(--gray);pointer-events:none;}
+/* Tags */
+.tag-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.tag{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:var(--neon);padding:3px 10px;font-size:9px;letter-spacing:1px;}
+/* Analytics */
+.analytics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
+.ana-card{background:var(--dark3);border:1px solid rgba(0,255,136,.06);padding:16px;text-align:center;}
+.ana-num{font-family:var(--ft);font-size:28px;color:var(--neon);line-height:1;font-weight:900;}
+.ana-lbl{font-size:9px;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.ana-chart{background:var(--dark3);border:1px solid rgba(0,255,136,.06);padding:16px;margin-bottom:16px;}
+.ana-chart-title{font-size:11px;color:var(--neon);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase;}
+.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px;}
+.chart-bar{flex:1;background:rgba(0,255,136,.15);border-top:1px solid var(--neon);transition:height .5s;position:relative;min-height:4px;}
+.chart-bar:hover{background:rgba(0,255,136,.3);}
+.chart-labels{display:flex;gap:4px;margin-top:6px;}
+.chart-lbl{flex:1;font-size:7px;color:var(--gray);text-align:center;letter-spacing:1px;}
+/* Mode maintenance */
+.maintenance-overlay{position:fixed;inset:0;z-index:99999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;}
+.maintenance-overlay.show{display:flex;}
+.maint-title{font-family:var(--ft);font-size:clamp(28px,6vw,56px);font-weight:900;}
+.maint-title em{color:var(--neon);font-style:normal;}
+.maint-sub{font-family:var(--fh);font-size:18px;color:rgba(240,240,240,.4);}
+/* Logs */
+.log-item{background:var(--dark3);padding:10px 14px;border-left:2px solid rgba(0,255,136,.2);margin-bottom:6px;font-size:11px;font-family:var(--fb);}
+.log-item.action{border-color:var(--neon);}
+.log-item.login{border-color:#4a9eff;}
+.log-item.delete{border-color:var(--red);}
+.log-time{color:var(--gray);font-size:9px;margin-top:2px;}
+/* Export CSV */
+.btn-export{background:none;border:1px solid rgba(0,255,136,.2);color:var(--neon);padding:8px 20px;font-family:var(--fb);font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .3s;}
+.btn-export:hover{background:rgba(0,255,136,.08);}
 
 /* RESPONSIVE */
 @media(max-width:768px){
@@ -669,6 +705,9 @@ select.fc option{background:var(--dark3);}
       <button class="atab" onclick="tab('tsoc',this)">📱 Réseaux</button>
       <button class="atab" onclick="tab('tsite',this)">⚙️ Site</button>
       <button class="atab" id="tteam-tab" onclick="tab('tteam',this)">👥 Équipe</button>
+      <button class="atab" onclick="tab('tanalytics',this)">📊 Analytics</button>
+      <button class="atab" onclick="tab('tlogs',this)">📋 Logs</button>
+      <button class="atab" onclick="tab('tmaint',this)">🔧 Maintenance</button>
     </div>
 
     <!-- ANNONCES -->
@@ -678,22 +717,63 @@ select.fc option{background:var(--dark3);}
         <div class="okmsg" id="okann">✅ Annonce publiée !</div>
         <div class="frow">
           <div class="fg"><label class="fl2">Titre</label><input class="fc" id="aant" placeholder="Titre de l'annonce"></div>
-          <div class="fg"><label class="fl2">Date</label><input type="date" class="fc" id="aand"></div>
+          <div class="fg"><label class="fl2">Date de l'annonce</label><input type="date" class="fc" id="aand"></div>
         </div>
-        <div class="fg"><label class="fl2">Description</label><textarea class="fc" id="aandesc" placeholder="Description…"></textarea></div>
+        <!-- Tags -->
+        <div class="fg">
+          <label class="fl2">Tags (séparés par virgule)</label>
+          <input class="fc" id="atags" placeholder="Ex: artiste, programme, billetterie">
+        </div>
+        <!-- Rich text description -->
+        <div class="fg">
+          <label class="fl2">Description</label>
+          <div class="richtext-toolbar">
+            <button type="button" class="rtb" onclick="rtFormat('bold')"><b>B</b></button>
+            <button type="button" class="rtb" onclick="rtFormat('italic')"><i>I</i></button>
+            <button type="button" class="rtb" onclick="rtFormat('underline')"><u>U</u></button>
+            <button type="button" class="rtb" onclick="rtInsert('\n\n• ')">• Liste</button>
+            <button type="button" class="rtb" onclick="rtInsert('\n\n')">¶</button>
+          </div>
+          <div class="fc richtext-editor" id="aandesc" contenteditable="true" placeholder="Description de l'annonce…" style="min-height:100px;outline:none;"></div>
+        </div>
+        <!-- Image -->
         <div class="fg"><label class="fl2">Image</label>
           <div class="upa" onclick="g('aanimg').click()">
-            <input type="file" id="aanimg" accept="image/*" style="display:none" onchange="prevImg(this,'prevann')">
-            <span class="upatxt"><em>📸</em>Choisir une image depuis ton téléphone / PC</span>
+            <input type="file" id="aanimg" accept="image/*" capture="environment" style="display:none" onchange="prevImg(this,'prevann')">
+            <span class="upatxt"><em>📸</em>Choisir une image ou prendre une photo</span>
             <img id="prevann" class="uprev">
           </div>
           <div class="upload-ld" id="ldann">⏳ Upload en cours…</div>
+        </div>
+        <!-- Programmation -->
+        <div class="fg">
+          <label class="fl2">Programmer la publication (optionnel)</label>
+          <input type="datetime-local" class="fc" id="aprog">
+          <div style="font-size:9px;color:var(--gray);margin-top:4px;">Laisser vide pour publier immédiatement</div>
         </div>
         <div class="trow">
           <div><div class="tlbl">🔥 Breaking — Annonce importante</div></div>
           <label class="tog"><input type="checkbox" id="abrk"><span class="tsl"></span></label>
         </div>
-        <button class="bta" style="margin-top:13px;" onclick="publishAnn()">Publier</button>
+        <div class="trow">
+          <div><div class="tlbl">💾 Sauvegarder comme brouillon</div><div class="tdesc">Ne sera pas visible sur le site</div></div>
+          <label class="tog"><input type="checkbox" id="adraft"><span class="tsl"></span></label>
+        </div>
+        <!-- Aperçu -->
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+          <button class="bta ghost" onclick="previewAnn()">👁 Aperçu</button>
+          <button class="bta" onclick="publishAnn()">Publier</button>
+        </div>
+      </div>
+      <!-- Aperçu live -->
+      <div class="panel" id="preview-panel" style="display:none;">
+        <div class="pt"><em>👁</em> Aperçu de l'annonce</div>
+        <div id="preview-content"></div>
+      </div>
+      <!-- Brouillons -->
+      <div class="panel">
+        <div class="pt"><em>💾</em> Brouillons</div>
+        <div class="alist" id="draftslist"><div style="font-size:11px;color:var(--gray);padding:10px;">Aucun brouillon.</div></div>
       </div>
       <div class="panel"><div class="pt"><em>📋</em> Annonces publiées</div><div class="alist" id="annlist"></div></div>
     </div>
@@ -872,7 +952,65 @@ select.fc option{background:var(--dark3);}
         <div class="tgrid" id="tgrid"></div>
       </div>
     </div>
+  
+    <!-- ANALYTICS -->
+    <div class="tp" id="tanalytics">
+      <div class="analytics-grid" id="ana-grid">
+        <div class="ana-card"><div class="ana-num" id="ana-vis">0</div><div class="ana-lbl">Visites totales</div></div>
+        <div class="ana-card"><div class="ana-num" id="ana-ann">0</div><div class="ana-lbl">Annonces</div></div>
+        <div class="ana-card"><div class="ana-num" id="ana-nl">0</div><div class="ana-lbl">Abonnés</div></div>
+        <div class="ana-card"><div class="ana-num" id="ana-sp">0</div><div class="ana-lbl">Sponsors</div></div>
+        <div class="ana-card"><div class="ana-num" id="ana-gal">0</div><div class="ana-lbl">Photos</div></div>
+        <div class="ana-card"><div class="ana-num" id="ana-team">0</div><div class="ana-lbl">Admins</div></div>
+      </div>
+      <div class="ana-chart">
+        <div class="ana-chart-title">Croissance abonnés (simulation)</div>
+        <div class="chart-bars" id="chart-bars"></div>
+        <div class="chart-labels" id="chart-labels"></div>
+      </div>
+      <div class="panel">
+        <div class="pt"><em>📧</em> Export Newsletter</div>
+        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">Télécharger la liste des abonnés en CSV.</p>
+        <button class="btn-export" onclick="exportCSV()">⬇ Télécharger CSV</button>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="tp" id="tlogs">
+      <div class="panel">
+        <div class="pt"><em>📋</em> Journal d'activité</div>
+        <div id="logs-list"><div style="font-size:12px;color:var(--gray);padding:10px;">Chargement…</div></div>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE -->
+    <div class="tp" id="tmaint">
+      <div class="panel">
+        <div class="pt"><em>🔧</em> Mode Maintenance</div>
+        <p style="font-family:var(--fh);font-size:14px;color:rgba(240,240,240,.35);margin-bottom:16px;line-height:1.6;">Quand activé, les visiteurs voient un écran "Site en maintenance" au lieu du site.</p>
+        <div class="trow">
+          <div><div class="tlbl">Activer le mode maintenance</div><div class="tdesc">Le site sera inaccessible aux visiteurs</div></div>
+          <label class="tog"><input type="checkbox" id="amaint" onchange="toggleMaintenance(this.checked)"><span class="tsl"></span></label>
+        </div>
+        <div class="fg" style="margin-top:16px;"><label class="fl2">Message de maintenance</label><textarea class="fc" id="amaint-msg" placeholder="Site en maintenance. Revenez bientôt…"></textarea></div>
+        <button class="bta" onclick="saveMaint()">Sauvegarder</button>
+        <div class="okmsg" id="okmaint">✅ Mode maintenance mis à jour !</div>
+      </div>
+      <div class="panel">
+        <div class="pt"><em>💾</em> Backup des données</div>
+        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">Télécharger une sauvegarde complète de toutes les données.</p>
+        <button class="btn-export" onclick="backupData()">⬇ Télécharger backup JSON</button>
+      </div>
+    </div>
+
   </div>
+</div>
+
+<!-- MAINTENANCE OVERLAY -->
+<div class="maintenance-overlay" id="maint-overlay">
+  <div style="font-size:48px;">🔧</div>
+  <div class="maint-title">MONO<em>.</em>SUMMER</div>
+  <div class="maint-sub" id="maint-msg-display">Site en maintenance. Revenez bientôt…</div>
 </div>
 
 <script>
@@ -971,6 +1109,12 @@ async function loadConfig(){
   const{data}=await sb.from('config').select('*');
   if(data)data.forEach(r=>{CFG[r.key]=r.value;});
   applyConfig();
+  // Mode maintenance (pas pour les admins)
+  if(CFG.maintenance==='true'&&!currentUser){
+    const msg=CFG.maintenance_msg||'Site en maintenance. Revenez bientôt…';
+    g('maint-msg-display').textContent=msg;
+    g('maint-overlay').classList.add('show');
+  }
 }
 async function setConfig(key,value){
   await sb.from('config').upsert({key,value},{onConflict:'key'});
@@ -1218,7 +1362,164 @@ async function openAdmin(){
   const isSA=currentProfile?.is_super_admin;
   if(g('tteam-tab'))g('tteam-tab').style.display=isSA?'flex':'none';
   await Promise.all([renderAnn(),renderVilles(),renderSp(),renderNL(),renderGalerie(),renderTeam()]);
+  loadAnalytics();renderDrafts();renderLogs();
+  // Charger maintenance
+  if(CFG.maintenance==='true'){
+    g('amaint').checked=true;
+    const msg=CFG.maintenance_msg||'Site en maintenance. Revenez bientôt…';
+    sv('amaint-msg',msg);
+  }
+  addLog('login','Connexion admin : '+(currentProfile?.name||currentUser?.email||''));
   g('admin').classList.add('show');document.body.style.overflow='hidden';
+}
+
+// ══ RICH TEXT ════════════════════════════════════════
+function rtFormat(cmd){document.execCommand(cmd,false,null);}
+function rtInsert(txt){
+  const el=g('aandesc');el.focus();
+  document.execCommand('insertText',false,txt);
+}
+function getDesc(){return g('aandesc')?.innerText?.trim()||'';}
+
+// ══ APERÇU ANNONCE ═══════════════════════════════════
+function previewAnn(){
+  const t=v('aant');const desc=getDesc();
+  const panel=g('preview-panel');const content=g('preview-content');
+  if(!t){alert('Ajoute un titre d'abord.');return;}
+  panel.style.display='block';
+  content.innerHTML=`
+    <div class="acard" style="max-width:340px;margin:0 auto;">
+      ${g('prevann').style.display!='none'?`<div class="aimg-wrap"><img src="${g('prevann').src}" class="aimg"><div class="watermark">MONO SUMMER</div></div>`:'<div class="aph">📢</div>'}
+      <div class="abody">
+        <div class="adate">${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div>
+        <div class="atitle">${t}</div>
+        <div class="adesc">${desc||'Aucune description.'}</div>
+        ${g('atags').value?`<div class="tag-wrap">${g('atags').value.split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join('')}</div>`:''}
+      </div>
+    </div>`;
+  panel.scrollIntoView({behavior:'smooth'});
+}
+
+// ══ BROUILLONS ═══════════════════════════════════════
+function saveDraft(){
+  const t=v('aant');if(!t)return;
+  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
+  drafts.unshift({id:Date.now(),title:t,date:v('aand'),desc:getDesc(),tags:v('atags'),ts:new Date().toLocaleString('fr-FR')});
+  localStorage.setItem('ms_drafts',JSON.stringify(drafts.slice(0,10)));
+  renderDrafts();
+}
+function renderDrafts(){
+  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
+  const el=g('draftslist');if(!el)return;
+  el.innerHTML=drafts.length?drafts.map((d,i)=>`
+    <div class="ali">
+      <div><div class="alit">${d.title}</div><div class="alim">${d.ts}</div></div>
+      <div class="alia">
+        <button class="bta sm ghost" onclick="loadDraft(${i})">Charger</button>
+        <button class="bta sm danger" onclick="delDraft(${i})">×</button>
+      </div>
+    </div>`).join(''):'<div style="font-size:11px;color:var(--gray);padding:10px;">Aucun brouillon.</div>';
+}
+function loadDraft(i){
+  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
+  const d=drafts[i];if(!d)return;
+  sv('aant',d.title);sv('aand',d.date);sv('atags',d.tags||'');
+  const desc=g('aandesc');if(desc)desc.innerText=d.desc||'';
+}
+function delDraft(i){
+  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
+  drafts.splice(i,1);localStorage.setItem('ms_drafts',JSON.stringify(drafts));
+  renderDrafts();
+}
+
+// ══ ANALYTICS ════════════════════════════════════════
+async function loadAnalytics(){
+  const[{count:nlCount},{count:annCount},{count:spCount},{count:galCount},{count:teamCount}]=await Promise.all([
+    sb.from('newsletter').select('*',{count:'exact',head:true}),
+    sb.from('annonces').select('*',{count:'exact',head:true}),
+    sb.from('sponsors').select('*',{count:'exact',head:true}),
+    sb.from('galerie').select('*',{count:'exact',head:true}),
+    sb.from('auth_admins').select('*',{count:'exact',head:true}),
+  ]);
+  const vis=parseInt(CFG.visitors)||0;
+  const els=[['ana-vis',vis],['ana-ann',annCount||0],['ana-nl',nlCount||0],['ana-sp',spCount||0],['ana-gal',galCount||0],['ana-team',teamCount||0]];
+  els.forEach(([id,val])=>{const el=g(id);if(el)el.textContent=val;});
+  // Chart simulé - croissance abonnés
+  const bars=g('chart-bars');const lbls=g('chart-labels');
+  if(bars&&lbls){
+    const months=['Jan','Fév','Mar','Avr','Mai','Juin','Juil'];
+    const vals=[0,0,0,0,0,0,nlCount||0];
+    const max=Math.max(...vals,1);
+    bars.innerHTML=vals.map(v=>`<div class="chart-bar" style="height:${Math.max(4,Math.round(v/max*100))}%;"></div>`).join('');
+    lbls.innerHTML=months.map(m=>`<div class="chart-lbl">${m}</div>`).join('');
+  }
+}
+
+// ══ LOGS ══════════════════════════════════════════════
+const LOGS=[];
+function addLog(type,msg){
+  LOGS.unshift({type,msg,time:new Date().toLocaleTimeString('fr-FR')});
+  if(LOGS.length>50)LOGS.pop();
+  renderLogs();
+}
+function renderLogs(){
+  const el=g('logs-list');if(!el)return;
+  el.innerHTML=LOGS.length?LOGS.map(l=>`
+    <div class="log-item ${l.type}">
+      ${l.msg}<div class="log-time">${l.time}</div>
+    </div>`).join(''):'<div style="font-size:12px;color:var(--gray);padding:10px;">Aucune activité récente.</div>';
+}
+
+// ══ EXPORT CSV ════════════════════════════════════════
+async function exportCSV(){
+  const{data}=await sb.from('newsletter').select('email,created_at').order('created_at',{ascending:false});
+  if(!data||!data.length)return alert('Aucun abonné à exporter.');
+  const csv='Email,Date inscription
+'+data.map(e=>`${e.email},${e.created_at?.split('T')[0]||''}`).join('
+');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='mono-summer-abonnes.csv';a.click();
+  addLog('action','Export CSV newsletter téléchargé');
+}
+
+// ══ BACKUP ════════════════════════════════════════════
+async function backupData(){
+  const[{data:annonces},{data:villes},{data:sponsors},{data:newsletter},{data:galerie},{data:config}]=await Promise.all([
+    sb.from('annonces').select('*'),
+    sb.from('villes').select('*'),
+    sb.from('sponsors').select('*'),
+    sb.from('newsletter').select('*'),
+    sb.from('galerie').select('*'),
+    sb.from('config').select('*'),
+  ]);
+  const backup={date:new Date().toISOString(),annonces,villes,sponsors,newsletter,galerie,config};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='mono-summer-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
+  addLog('action','Backup complet téléchargé');
+}
+
+// ══ MAINTENANCE ════════════════════════════════════════
+async function toggleMaintenance(on){
+  await setConfig('maintenance',on?'true':'false');
+  if(on){
+    const msg=v('amaint-msg')||'Site en maintenance. Revenez bientôt…';
+    await setConfig('maintenance_msg',msg);
+    g('maint-msg-display').textContent=msg;
+    g('maint-overlay').classList.add('show');
+  } else {
+    g('maint-overlay').classList.remove('show');
+  }
+  addLog('action','Mode maintenance '+(on?'activé':'désactivé'));
+}
+async function saveMaint(){
+  const msg=v('amaint-msg');
+  await setConfig('maintenance_msg',msg);
+  if(g('amaint').checked){
+    g('maint-msg-display').textContent=msg;
+  }
+  flash('okmaint');
 }
 
 // ══ SAVES ═════════════════════════════════════════
@@ -1250,31 +1551,37 @@ async function publishAnn(){
   const t=v('aant'),d=v('aand');
   if(!t||!d)return alert('Titre et date requis.');
   
-  let file=g('aanimg').files[0];
-  let imgUrl=null;
+  // Si brouillon, sauvegarder localement
+  if(g('adraft')?.checked){saveDraft();flash('okann');g('okann').textContent='💾 Brouillon sauvegardé !';return;}
   
+  let file=g('aanimg').files[0];let imgUrl=null;
   if(file){
-    // Vérification type
     if(!file.type.startsWith('image/')){return alert('❌ Le fichier doit être une image.');}
-    // Vérification taille 2MB max
     if(file.size>2*1024*1024){
-      const ld=g('ldann');
-      ld.textContent='⚙️ Compression en cours…';ld.classList.add('show');
-      file=await compressImage(file);
-      ld.classList.remove('show');ld.textContent='⏳ Upload en cours…';
+      const ld=g('ldann');ld.textContent='⚙️ Compression…';ld.classList.add('show');
+      file=await compressImage(file);ld.classList.remove('show');ld.textContent='⏳ Upload en cours…';
     }
     imgUrl=await uploadImg(file,'annonces','ldann');
   }
   
+  const desc=getDesc();
+  const tags=v('atags');
   const{error}=await sb.from('annonces').insert({
-    title:t, date:d, description:v('aandesc'),
-    image_url:imgUrl, is_breaking:g('abrk').checked
+    title:t,date:d,description:desc,
+    image_url:imgUrl,is_breaking:g('abrk')?.checked||false
   });
   if(error){alert('Erreur: '+error.message);return;}
+  
+  addLog('action','Annonce publiée : '+t);
   await renderAnn();
-  sv('aant','');sv('aand','');sv('aandesc','');
-  g('aanimg').value='';g('prevann').style.display='none';g('abrk').checked=false;
+  sv('aant','');sv('aand','');sv('atags','');
+  const descEl=g('aandesc');if(descEl)descEl.innerText='';
+  g('aanimg').value='';g('prevann').style.display='none';
+  if(g('abrk'))g('abrk').checked=false;
+  if(g('adraft'))g('adraft').checked=false;
+  g('okann').textContent='✅ Annonce publiée !';
   flash('okann');
+  g('preview-panel').style.display='none';
 }
 async function delAnn(id){await sb.from('annonces').delete().eq('id',id);await renderAnn();}
 async function addVille(){
