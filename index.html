@@ -280,9 +280,12 @@ footer{background:var(--black);border-top:1px solid rgba(0,255,136,.06);padding:
 .eeclose:hover{border-color:var(--neon);color:var(--neon);}
 
 /* AUTH MODAL */
-.mbg{position:fixed;inset:0;z-index:99500;background:rgba(3,3,3,.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:18px;}
+.mbg{position:fixed;inset:0;z-index:99500;background:rgba(3,3,3,.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:18px;cursor:auto;}
 .mbg.show{display:flex;animation:fup .3s both;}
-.mbox{background:var(--dark2);border:1px solid rgba(0,255,136,.14);padding:38px;width:100%;max-width:370px;position:relative;}
+.mbox{background:var(--dark2);border:1px solid rgba(0,255,136,.14);padding:38px;width:100%;max-width:370px;position:relative;cursor:auto;}
+.mbox *{cursor:auto;}
+.mbox button{cursor:pointer !important;}
+.mbox .fbtn{cursor:pointer !important;}
 .mbox::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);}
 .mlogo{font-family:var(--ft);font-size:20px;letter-spacing:3px;text-align:center;margin-bottom:5px;font-weight:900;}
 .mlogo em{color:var(--neon);font-style:normal;}
@@ -298,9 +301,9 @@ footer{background:var(--black);border-top:1px solid rgba(0,255,136,.06);padding:
 .mblk.show{display:block;}
 .minfo{background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.16);color:var(--neon);padding:10px 13px;font-family:var(--fh);font-size:14px;display:block;line-height:1.5;}
 .flbl{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--neon);margin-bottom:6px;}
-.finp{width:100%;background:var(--dark3);border:1px solid rgba(0,255,136,.09);color:var(--white);padding:11px 13px;font-family:var(--fb);font-size:13px;outline:none;transition:border-color .3s;margin-bottom:13px;}
+.finp{width:100%;background:var(--dark3);border:1px solid rgba(0,255,136,.09);color:var(--white);padding:11px 13px;font-family:var(--fb);font-size:13px;outline:none;transition:border-color .3s;margin-bottom:13px;cursor:text;}
 .finp:focus{border-color:var(--neon);}
-.fbtn{width:100%;background:var(--neon);color:var(--black);border:none;padding:13px;font-family:var(--fb);font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .3s;}
+.fbtn{width:100%;background:var(--neon);color:var(--black);border:none;padding:13px;font-family:var(--fb);font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer !important;transition:all .3s;}
 .fbtn:hover{box-shadow:0 0 28px rgba(0,255,136,.32);}
 .fbtn:disabled{opacity:.5;cursor:not-allowed;}
 .mclose{position:absolute;top:11px;right:11px;background:none;border:none;color:var(--gray);font-size:16px;cursor:pointer;}
@@ -513,7 +516,7 @@ select.fc option{background:var(--dark3);}
   </ul>
   <div class="nav-right">
     <div class="vis-wrap"><span class="vis-dot"></span><span id="vcnt">—</span> curieux</div>
-    <button class="btn-cnx" onclick="openAuth()">Connexion</button>
+    <button class="btn-cnx" onclick="openAuth();return false;">Connexion</button>
     <button class="hamburger" id="hbg" onclick="toggleMenu()">
       <span></span><span></span><span></span>
     </button>
@@ -529,7 +532,7 @@ select.fc option{background:var(--dark3);}
   <a href="#sponsors" class="mm-a" onclick="closeMenu()">Partenaires</a>
   <a href="#socials" class="mm-a" onclick="closeMenu()">Réseaux</a>
   <div class="mm-line"></div>
-  <button class="mm-cnx" onclick="closeMenu();openAuth()">Connexion</button>
+  <button class="mm-cnx" onclick="closeMenu();openAuth();return false;">Connexion</button>
   <div class="mm-vis"><span id="vcnt2">—</span> personnes suivent déjà 👁️</div>
 </div>
 
@@ -1068,7 +1071,7 @@ select.fc option{background:var(--dark3);}
     <a href="#annonces" class="bnav-item" onclick="bnav(this,'#annonces')"><span class="bnav-icon">📢</span><span class="bnav-lbl">Annonces</span></a>
     <a href="#galerie" class="bnav-item" onclick="bnav(this,'#galerie')"><span class="bnav-icon">📸</span><span class="bnav-lbl">Galerie</span></a>
     <a href="#socials" class="bnav-item" onclick="bnav(this,'#socials')"><span class="bnav-icon">🌍</span><span class="bnav-lbl">Réseaux</span></a>
-    <button class="bnav-item" onclick="openAuth()"><span class="bnav-icon">👤</span><span class="bnav-lbl">Connexion</span></button>
+    <button class="bnav-item" onclick="openAuth();return false;"><span class="bnav-icon">👤</span><span class="bnav-lbl">Connexion</span></button>
   </div>
 </div>
 
@@ -1263,7 +1266,7 @@ async function renderAnn(){
       '<div class="abody">'+
       '<div class="adate">'+fmtD(a.date)+'</div>'+
       '<div class="atitle">'+a.title+'</div>'+
-      '<div class="adesc">'+(a.description||'')+'</div>'+
+      '<div class="adesc">'+(a.description||'').replace(/\n/g,'<br>')+'</div>'+
       '<div class="ashare">'+
       '<button class="sbtn" onclick="shareWA(\''+encodeURIComponent(a.title)+'\')">'+wasvg+' WhatsApp</button>'+
       '<button class="sbtn" onclick="shareFB()">'+fbsvg+' Facebook</button>'+
@@ -1362,8 +1365,14 @@ async function uploadImg(file,folder,lid){
 // ══ AUTH ══════════════════════════════════════════
 let loginAttempts=0,blocked=false,blkInt=null;
 
-const openAuth=()=>g('auth-modal').classList.add('show');
-const closeAuth=()=>g('auth-modal').classList.remove('show');
+function openAuth(){
+  const modal=g('auth-modal');
+  if(modal){modal.classList.add('show');document.body.style.overflow='hidden';}
+}
+function closeAuth(){
+  const modal=g('auth-modal');
+  if(modal){modal.classList.remove('show');document.body.style.overflow='';}
+}
 function authTab(id,btn){
   document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('.mpane').forEach(p=>p.classList.remove('on'));
@@ -1438,7 +1447,11 @@ function rtInsert(txt){
   const el=g('aandesc');el.focus();
   document.execCommand('insertText',false,txt);
 }
-function getDesc(){return g('aandesc')?.innerText?.trim()||'';}
+function getDesc(){
+  const el=g('aandesc');
+  if(!el)return '';
+  return el.innerText?.trim()||el.textContent?.trim()||'';
+}
 
 // ══ APERÇU ANNONCE ═══════════════════════════════════
 function previewAnn(){
