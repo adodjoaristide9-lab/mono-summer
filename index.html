@@ -1270,11 +1270,15 @@ let showAllAnn=false;
 function toggleAllAnn(){showAllAnn=!showAllAnn;renderAnn();}
 
 async function renderAnn(){
-  const{data}=await sb.from('annonces').select('*').order('created_at',{ascending:false});
   const gr=g('agrid');
+  let data;
+  try{
+    const res=await sb.from('annonces').select('*').order('created_at',{ascending:false});
+    data=res.data;
+  }catch(e){ console.warn('renderAnn error:',e); data=null; }
   if(!data||!data.length){
-    gr.innerHTML='<div class="aempty"><span class="aempty-icon">📢</span><div class="aempty-txt">aucune annonce pour le moment…</div><div class="aempty-sub">revenez bientôt, le Mono prépare quelque chose 👁️</div></div>';
-    g('stann').textContent=0;
+    gr.innerHTML='<div class="aempty"><span class="aempty-icon">📢</span><div class="aempty-txt">aucune annonce pour le moment…</div><div class="aempty-sub">revenez bientôt 👁️</div></div>';
+    if(g('stann'))g('stann').textContent=0;
     const sw=g('ann-see-all-wrap');if(sw)sw.style.display='none';
     return;
   }
@@ -1314,8 +1318,19 @@ async function renderAnn(){
 }
 
 async function renderVilles(){
-  const{data}=await sb.from('villes').select('*').order('position');
-  if(!data)return;
+  let data;
+  try{
+    const res=await sb.from('villes').select('*').order('position');
+    data=res.data;
+  }catch(e){ data=null; }
+  if(!data||!data.length){
+    // Villes par défaut si Supabase échoue
+    data=[
+      {id:1,name:'Comé',dept:'Mono · Bénin'},{id:2,name:'Grand-Popo',dept:'Mono · Bénin'},
+      {id:3,name:'Lokossa',dept:'Mono · Bénin'},{id:4,name:'Dogbo',dept:'Mono · Bénin'},
+      {id:5,name:'Athiémé',dept:'Mono · Bénin'},{id:6,name:'Azovè',dept:'Mono · Bénin'}
+    ];
+  }
   g('vgrid').innerHTML=data.map((v,i)=>`<div class="vitem reveal"><span class="vn">0${i+1}</span><div class="vname">${v.name}</div><div class="vsub">${v.dept}</div></div>`).join('');
   g('vgrid').querySelectorAll('.reveal').forEach(el=>ro.observe(el));
   if(g('villeslist'))g('villeslist').innerHTML=data.map(v=>`<div class="ali"><div><div class="alit">${v.name}</div><div class="alim">${v.dept}</div></div><div class="alia"><button class="bta sm danger" onclick="confirmDel(()=>delVille(${v.id}))">Retirer</button></div></div>`).join('');
