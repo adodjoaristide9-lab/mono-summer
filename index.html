@@ -2,498 +2,364 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MONO SUMMER — Le Mono cache bien son jeu</title>
-<meta name="description" content="Le Mono cache bien son jeu… Un événement 4× plus grand que d'habitude. Bénin 🇧🇯">
-<meta property="og:title" content="MONO SUMMER">
-<meta property="og:description" content="Le Mono cache bien son jeu… Un événement 4× plus grand que d'habitude.">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23030303'/><text y='.85em' font-size='80' font-family='sans-serif' fill='%2300FF88'>M</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Permanent+Marker&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --neon:#00FF88;--black:#030303;--dark:#080808;--dark2:#0f0f0f;
-  --dark3:#161616;--dark4:#1e1e1e;--white:#f0f0f0;--gray:#666;
-  --red:#ff4444;--orange:#ff8c00;
-  --ft:'Unbounded',sans-serif;
-  --fh:'Permanent Marker',cursive;
-  --fb:'DM Sans',sans-serif;
+  --neon:#00FF88;--neon2:#00cc6a;
+  --black:#030303;--dark:#080808;--dark2:#0f0f0f;--dark3:#161616;--dark4:#1e1e1e;
+  --white:#f0f0f0;--gray:#666;--gray2:#333;
+  --glass:rgba(255,255,255,.03);--red:#ff4444;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{background:var(--black);color:var(--white);font-family:var(--fb);overflow-x:hidden;}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none;}
 
 /* CURSOR */
 #cur,#cur-r{position:fixed;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);}
-#cur{width:7px;height:7px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon);}
-#cur-r{width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,255,136,.3);z-index:99998;transition:all .1s ease;}
-body.ch #cur{width:12px;height:12px;}
-body.ch #cur-r{width:50px;height:50px;border-color:rgba(0,255,136,.6);}
-.cur-trail{position:fixed;pointer-events:none;z-index:99990;border-radius:50%;transform:translate(-50%,-50%);background:var(--neon);}
-@media(pointer:coarse){#cur,#cur-r,.cur-trail{display:none !important;}}
+#cur{width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 12px var(--neon);}
+#cur-r{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,255,136,.35);z-index:99998;transition:all .1s ease;}
+body.ch #cur{width:13px;height:13px;}
+body.ch #cur-r{width:52px;height:52px;border-color:rgba(0,255,136,.6);}
+@media(pointer:coarse){#cur,#cur-r{display:none;}body{cursor:auto;}}
 
 /* PROGRESS */
-#prog{position:fixed;top:0;left:0;height:2px;background:var(--neon);box-shadow:0 0 8px var(--neon);z-index:9997;width:0;}
+#prog{position:fixed;top:0;left:0;height:2px;background:var(--neon);box-shadow:0 0 8px var(--neon);z-index:9997;width:0;transition:width .08s;}
 
-
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:99990;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .8s,visibility .8s;}
+#splash.out{opacity:0;visibility:hidden;pointer-events:none;}
+.sp-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,13vw,140px);line-height:.9;text-align:center;letter-spacing:-2px;}
+.sp-logo em{color:var(--neon);font-style:normal;display:block;text-shadow:0 0 60px rgba(0,255,136,.4);}
+.sp-tag{font-family:'Syne',sans-serif;font-size:clamp(10px,2vw,14px);color:rgba(240,240,240,.3);letter-spacing:5px;text-transform:uppercase;}
+.sp-bar{width:160px;height:1px;background:var(--dark3);overflow:hidden;margin-top:8px;}
+.sp-fill{height:100%;width:0;background:var(--neon);box-shadow:0 0 10px var(--neon);animation:spfill 2.8s ease forwards;}
+@keyframes spfill{to{width:100%;}}
+.sp-dots{display:flex;gap:7px;}
+.sp-dot{width:4px;height:4px;border-radius:50%;background:var(--neon);animation:sdot 1.2s ease-in-out infinite;}
+.sp-dot:nth-child(2){animation-delay:.2s;}.sp-dot:nth-child(3){animation-delay:.4s;}
+@keyframes sdot{0%,100%{opacity:.2;transform:scale(1);}50%{opacity:1;transform:scale(1.4);}}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;transition:all .3s;}
-nav.scrolled{background:rgba(3,3,3,.95);backdrop-filter:blur(24px);padding:11px 40px;border-bottom:1px solid rgba(0,255,136,.06);}
-.nav-logo{font-family:var(--ft);font-size:17px;letter-spacing:3px;text-decoration:none;color:var(--white);font-weight:900;}
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px 48px;display:flex;justify-content:space-between;align-items:center;transition:all .3s;}
+nav.scrolled{background:rgba(3,3,3,.94);backdrop-filter:blur(24px);padding:12px 48px;border-bottom:1px solid rgba(0,255,136,.07);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:6px;cursor:none;text-decoration:none;color:var(--white);}
 .nav-logo em{color:var(--neon);font-style:normal;}
-.nav-center{display:flex;gap:22px;list-style:none;}
-.nav-center a{text-decoration:none;color:rgba(240,240,240,.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;transition:color .3s;}
+.nav-center{display:flex;gap:28px;list-style:none;}
+.nav-center a{text-decoration:none;color:rgba(240,240,240,.45);font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:color .3s;}
 .nav-center a:hover{color:var(--neon);}
-.nav-right{display:flex;align-items:center;gap:12px;}
-.vis-wrap{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(240,240,240,.3);}
-.vis-dot{width:5px;height:5px;border-radius:50%;background:var(--neon);box-shadow:0 0 5px var(--neon);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.2;}}
-.btn-cnx{background:transparent;border:1px solid rgba(0,255,136,.3);color:var(--neon);padding:7px 17px;font-family:var(--fb);font-size:10px;letter-spacing:2px;text-transform:uppercase;transition:all .3s;}
-.btn-cnx:hover{background:var(--neon);color:var(--black);}
-.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:3px;}
-.hamburger span{display:block;width:21px;height:1.5px;background:var(--white);transition:all .3s;}
-.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(4px,4px);}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.vis-wrap{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(240,240,240,.35);}
+.vis-dot{width:5px;height:5px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+.btn-connexion{background:transparent;border:1px solid rgba(0,255,136,.35);color:var(--neon);padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:none;transition:all .3s;}
+.btn-connexion:hover{background:var(--neon);color:var(--black);box-shadow:0 0 28px rgba(0,255,136,.35);}
+
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:none;padding:4px;background:none;border:none;}
+.hamburger span{display:block;width:24px;height:1.5px;background:var(--white);transition:all .3s;}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(4.5px,4.5px);}
 .hamburger.open span:nth-child(2){opacity:0;}
-.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px);}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(4.5px,-4.5px);}
 
 /* MOBILE MENU */
-#mmenu{position:fixed;inset:0;z-index:990;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;opacity:0;visibility:hidden;transition:all .4s;overflow:hidden;}
-#mmenu.open{opacity:1;visibility:visible;}
-#mmenu::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.04),transparent 70%);}
-.mm-line{width:32px;height:1px;background:var(--neon);box-shadow:0 0 8px var(--neon);margin:12px auto;}
-.mm-a{font-family:var(--ft);font-size:clamp(28px,7vw,48px);letter-spacing:2px;text-decoration:none;color:rgba(240,240,240,.22);transition:all .4s;padding:5px 0;font-weight:900;position:relative;z-index:1;}
-.mm-a:hover{color:var(--neon);}
-.mm-cnx{margin-top:18px;background:var(--neon);color:var(--black);border:none;padding:13px 30px;font-family:var(--fb);font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;position:relative;z-index:1;}
-.mm-vis{font-family:var(--fh);font-size:13px;color:rgba(240,240,240,.18);margin-top:16px;position:relative;z-index:1;}
+#mobile-menu{
+  position:fixed;inset:0;z-index:990;background:var(--black);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  opacity:0;visibility:hidden;transition:all .4s;
+}
+#mobile-menu.open{opacity:1;visibility:visible;}
+.mm-link{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,10vw,56px);letter-spacing:4px;text-decoration:none;color:rgba(240,240,240,.3);transition:color .3s;padding:8px 0;}
+.mm-link:hover{color:var(--neon);}
+.mm-vis{font-size:12px;color:rgba(240,240,240,.25);letter-spacing:2px;margin-top:20px;display:flex;align-items:center;gap:6px;}
+.mm-connexion{margin-top:24px;background:var(--neon);color:var(--black);border:none;padding:14px 36px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;cursor:none;transition:all .3s;}
+.mm-neon-line{width:40px;height:1px;background:var(--neon);box-shadow:0 0 8px var(--neon);margin:16px auto;}
 
 /* HERO */
-#hero{position:relative;height:100svh;min-height:620px;display:flex;flex-direction:column;justify-content:flex-end;padding:0 40px 68px;overflow:hidden;}
-canvas#hcv{position:absolute;inset:0;z-index:0;}
-.hero-ov{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(3,3,3,.4) 0%,rgba(3,3,3,.5) 40%,rgba(3,3,3,.97) 100%);}
-.lasers{position:absolute;bottom:100px;left:0;right:0;z-index:2;height:380px;pointer-events:none;}
-.laser{position:absolute;bottom:0;width:1px;transform-origin:bottom;}
+#hero{position:relative;height:100svh;min-height:600px;display:flex;flex-direction:column;justify-content:flex-end;padding:0 48px 72px;overflow:hidden;}
+.grid-bg{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(0,255,136,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.025) 1px,transparent 1px);background-size:56px 56px;animation:gdrift 28s linear infinite;}
+@keyframes gdrift{to{background-position:56px 56px;}}
+.bokeh{position:absolute;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none;}
+.bk1{width:460px;height:460px;background:rgba(0,255,136,.07);top:-100px;left:-80px;animation:bkf 11s ease-in-out infinite;}
+.bk2{width:320px;height:320px;background:rgba(0,200,100,.05);top:25%;right:-40px;animation:bkf 14s ease-in-out infinite reverse;}
+.bk3{width:550px;height:550px;background:rgba(0,255,136,.04);bottom:-180px;left:25%;animation:bkf 17s ease-in-out infinite;}
+@keyframes bkf{0%,100%{transform:translate(0,0);}33%{transform:translate(18px,-25px);}66%{transform:translate(-12px,18px);}}
+.hero-ov{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(3,3,3,.45) 0%,rgba(3,3,3,.55) 45%,rgba(3,3,3,.96) 100%);}
+.lasers{position:absolute;bottom:120px;left:0;right:0;z-index:3;height:380px;pointer-events:none;}
+.laser{position:absolute;bottom:0;width:1px;transform-origin:bottom center;}
 .laser::before{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,255,136,.65),transparent);animation:lsw 5s ease-in-out infinite;}
-.l1{left:10%;height:290px;transform:rotate(-22deg);}
-.l2{left:24%;height:370px;transform:rotate(-9deg);animation-delay:.7s;}
-.l3{left:40%;height:330px;transform:rotate(0);animation-delay:1.3s;}
-.l4{left:58%;height:390px;transform:rotate(9deg);animation-delay:2s;}
-.l5{left:74%;height:310px;transform:rotate(20deg);animation-delay:2.7s;}
-.l6{left:88%;height:250px;transform:rotate(28deg);animation-delay:3.4s;}
-@keyframes lsw{0%,100%{opacity:.12;}50%{opacity:.8;}}
-.crowd{position:absolute;bottom:0;left:0;right:0;height:170px;z-index:3;background:linear-gradient(to top,var(--black) 30%,transparent);}
-.hcontent{position:relative;z-index:10;max-width:900px;}
-.hbadge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(0,255,136,.2);background:rgba(0,255,136,.06);padding:5px 13px;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--neon);margin-bottom:14px;animation:fup .8s .2s both;}
-.hbadge b{width:5px;height:5px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon);display:block;animation:pulse 2s infinite;}
-h1.htitle{font-family:var(--ft);font-size:clamp(50px,12vw,155px);line-height:.88;letter-spacing:-3px;font-weight:900;}
-h1.htitle .outline{display:block;color:transparent;-webkit-text-stroke:2px var(--neon);animation:glitch 4s infinite 2s;}
-/* Lettres animées une par une */
-.letter{display:inline-block;opacity:0;transform:translateY(30px);animation:letterIn .5s ease forwards;}
-@keyframes letterIn{to{opacity:1;transform:translateY(0);}}
-h1.htitle .outline .letter{color:transparent;-webkit-text-stroke:2px var(--neon);}
-@keyframes glitch{
-  0%,95%,100%{text-shadow:none;}
-  96%{text-shadow:3px 0 0 rgba(255,0,80,.7),-3px 0 0 rgba(0,200,255,.7);}
-  97%{text-shadow:-3px 0 0 rgba(255,0,80,.7),3px 0 0 rgba(0,200,255,.7);}
-  98%{text-shadow:none;}
-  99%{text-shadow:2px 0 0 rgba(255,0,80,.5);}
-}
-.htag{font-family:var(--fh);font-size:clamp(15px,3vw,25px);color:rgba(240,240,240,.5);margin:13px 0 27px;animation:fup .8s .5s both;}
-.htag em{color:var(--neon);font-style:normal;}
-.hcta{display:flex;gap:11px;flex-wrap:wrap;animation:fup .8s .7s both;}
-.btn-p{display:inline-flex;align-items:center;gap:8px;background:var(--neon);color:var(--black);padding:13px 26px;font-family:var(--fb);font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:all .3s;position:relative;overflow:hidden;}
+.l1{left:12%;height:320px;transform:rotate(-22deg);}
+.l2{left:26%;height:400px;transform:rotate(-9deg);animation-delay:.7s;}
+.l3{left:42%;height:360px;transform:rotate(0);animation-delay:1.3s;}
+.l4{left:60%;height:420px;transform:rotate(9deg);animation-delay:2s;}
+.l5{left:76%;height:340px;transform:rotate(20deg);animation-delay:2.7s;}
+.l6{left:90%;height:280px;transform:rotate(28deg);animation-delay:3.4s;}
+@keyframes lsw{0%,100%{opacity:.15;}50%{opacity:.85;}}
+.crowd{position:absolute;bottom:0;left:0;right:0;height:200px;z-index:2;background:linear-gradient(to top,var(--black) 35%,transparent);}
+.hero-content{position:relative;z-index:10;max-width:960px;}
+.hero-badge{display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(0,255,136,.22);background:rgba(0,255,136,.06);padding:6px 16px;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--neon);margin-bottom:18px;animation:fup .8s .2s both;}
+.hero-badge b{width:5px;height:5px;border-radius:50%;background:var(--neon);box-shadow:0 0 7px var(--neon);display:block;animation:pulse 2s infinite;}
+h1.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,13vw,175px);line-height:.88;letter-spacing:-2px;animation:fup .8s .35s both;}
+h1.hero-title .outline{display:block;color:transparent;-webkit-text-stroke:2px var(--neon);text-shadow:0 0 70px rgba(0,255,136,.2);}
+.hero-tag{font-family:'Syne',sans-serif;font-size:clamp(14px,2vw,19px);color:rgba(240,240,240,.4);letter-spacing:3px;margin:16px 0 32px;animation:fup .8s .55s both;}
+.hero-tag em{color:var(--neon);font-style:normal;}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;animation:fup .8s .75s both;}
+.btn-p{display:inline-flex;align-items:center;gap:9px;background:var(--neon);color:var(--black);padding:15px 30px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;cursor:none;transition:all .3s;position:relative;overflow:hidden;}
 .btn-p::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.18);transform:translateX(-100%);transition:transform .4s;}
 .btn-p:hover::after{transform:translateX(0);}
-.btn-p:hover{box-shadow:0 0 40px rgba(0,255,136,.45);transform:translateY(-2px);}
-.btn-p:active,.btn-g:active,.btn-cnx:active{transform:scale(.97);}
-.btn-g{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(240,240,240,.16);color:var(--white);padding:13px 26px;font-family:var(--fb);font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;transition:all .3s;}
+.btn-p:hover{box-shadow:0 0 45px rgba(0,255,136,.45);transform:translateY(-2px);}
+.btn-g{display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(240,240,240,.18);color:var(--white);padding:15px 30px;font-family:'Syne',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;cursor:none;transition:all .3s;}
 .btn-g:hover{border-color:var(--neon);color:var(--neon);}
-.shint{position:absolute;bottom:20px;right:40px;z-index:10;display:flex;flex-direction:column;align-items:center;gap:4px;animation:fup .8s 1.1s both;}
-.sline{width:1px;height:38px;background:linear-gradient(var(--neon),transparent);}
-.stxt{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(240,240,240,.2);writing-mode:vertical-rl;}
-@keyframes fup{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.scroll-hint{position:absolute;bottom:24px;right:48px;z-index:10;display:flex;flex-direction:column;align-items:center;gap:5px;animation:fup .8s 1.1s both;}
+.scroll-line{width:1px;height:44px;background:linear-gradient(var(--neon),transparent);}
+.scroll-txt{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(240,240,240,.25);writing-mode:vertical-rl;}
+@keyframes fup{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
 
 /* TEASER */
-#teaser{padding:60px 40px;background:var(--dark);border-top:1px solid rgba(0,255,136,.06);border-bottom:1px solid rgba(0,255,136,.06);text-align:center;position:relative;overflow:hidden;}
+#teaser{padding:72px 48px;background:var(--dark);border-top:1px solid rgba(0,255,136,.07);border-bottom:1px solid rgba(0,255,136,.07);text-align:center;position:relative;overflow:hidden;}
 #teaser::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.04),transparent 68%);}
-.ts-eye{font-size:38px;display:block;margin-bottom:11px;animation:eblink 4s ease-in-out infinite;}
+.ts-eye{font-size:44px;display:block;margin-bottom:14px;animation:eblink 4s ease-in-out infinite;}
 @keyframes eblink{0%,88%,100%{transform:scaleY(1);}93%{transform:scaleY(.08);}}
-.tsq{font-family:var(--fh);font-size:clamp(18px,5vw,40px);color:var(--white);max-width:680px;margin:0 auto 14px;position:relative;z-index:1;line-height:1.3;}
-.tsq em{color:var(--neon);font-style:normal;}
-.tss{font-family:var(--fh);font-size:clamp(13px,2.5vw,17px);color:rgba(240,240,240,.33);position:relative;z-index:1;}
+.ts-q{font-family:'Syne',sans-serif;font-size:clamp(18px,4vw,40px);font-weight:800;line-height:1.2;color:var(--white);max-width:750px;margin:0 auto 18px;position:relative;z-index:1;}
+.ts-q em{color:var(--neon);font-style:normal;}
+.ts-s{font-size:13px;color:rgba(240,240,240,.35);letter-spacing:2px;position:relative;z-index:1;}
 
 /* COUNTDOWN */
-#countdown{padding:50px 40px;background:var(--black);text-align:center;}
-.cdlbl{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--neon);margin-bottom:30px;display:flex;align-items:center;justify-content:center;gap:9px;}
-.cdlbl::before{content:'';flex:1;max-width:45px;height:1px;background:linear-gradient(to right,transparent,var(--neon));}
-.cdlbl::after{content:'';flex:1;max-width:45px;height:1px;background:linear-gradient(to left,transparent,var(--neon));}
-.cdgrid{display:flex;justify-content:center;align-items:center;flex-wrap:nowrap;}
-.cditem{padding:0 clamp(6px,2vw,22px);text-align:center;position:relative;}
-.cditem:not(:last-child)::after{content:':';position:absolute;right:-2px;top:50%;transform:translateY(-58%);font-family:var(--ft);font-size:clamp(34px,5vw,62px);color:rgba(0,255,136,.2);animation:pulse 1s infinite;}
-.cdn{font-family:var(--ft);font-size:clamp(42px,7vw,86px);line-height:1;color:var(--white);text-shadow:0 0 30px rgba(0,255,136,.15);display:block;font-weight:900;}
-.cdu{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(240,240,240,.27);margin-top:4px;}
+#countdown{padding:56px 48px;background:var(--black);text-align:center;}
+.cd-lbl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--neon);margin-bottom:36px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.cd-lbl::before{content:'';flex:1;max-width:60px;height:1px;background:linear-gradient(to right,transparent,var(--neon));}
+.cd-lbl::after{content:'';flex:1;max-width:60px;height:1px;background:linear-gradient(to left,transparent,var(--neon));}
+.cd-grid{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:0;}
+.cd-item{padding:0 20px;text-align:center;position:relative;}
+.cd-item:not(:last-child)::after{content:':';position:absolute;right:-2px;top:50%;transform:translateY(-58%);font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,6vw,72px);color:rgba(0,255,136,.25);animation:pulse 1s infinite;}
+.cd-n{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,8vw,100px);line-height:1;color:var(--white);text-shadow:0 0 35px rgba(0,255,136,.18);display:block;}
+.cd-u{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(240,240,240,.3);margin-top:5px;}
 
 /* SECTIONS */
-.sec{padding:76px 40px;}
-.stag{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--neon);margin-bottom:11px;display:flex;align-items:center;gap:8px;}
-.stag::before{content:'';width:16px;height:1px;background:var(--neon);box-shadow:0 0 6px var(--neon);}
-.stitle{font-family:var(--ft);font-size:clamp(30px,5vw,60px);letter-spacing:1px;line-height:1;margin-bottom:38px;font-weight:900;}
+.sec{padding:88px 48px;}
+.sec-tag{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--neon);margin-bottom:14px;display:flex;align-items:center;gap:9px;}
+.sec-tag::before{content:'';width:20px;height:1px;background:var(--neon);box-shadow:0 0 7px var(--neon);}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,68px);letter-spacing:2px;line-height:1;margin-bottom:48px;}
 
 /* ANNONCES */
 #annonces{background:var(--black);}
-.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:15px;}
-.acard{background:rgba(255,255,255,.02);border:1px solid rgba(0,255,136,.09);overflow:hidden;transition:all .4s;position:relative;}
-.acard.breaking{border-color:rgba(255,140,0,.35);}
-.acard.breaking::before{content:'🔥 BREAKING';position:absolute;top:10px;left:10px;z-index:5;background:var(--orange);color:var(--black);font-size:8px;font-weight:700;letter-spacing:2px;padding:3px 7px;font-family:var(--fb);}
-.acard::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,136,.04),transparent 55%);opacity:0;transition:opacity .4s;}
-.acard:hover{transform:translateY(-4px);border-color:rgba(0,255,136,.28);box-shadow:0 18px 46px rgba(0,0,0,.5);}
-.acard:hover::after{opacity:1;}
-/* Image contain - image entière visible */
-.aimg-wrap{width:100%;height:200px;background:var(--dark3);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
-.aimg{width:100%;height:100%;object-fit:contain;display:block;transition:transform .4s;}
-.acard:hover .aimg{transform:scale(1.03);}
-.aimg-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,136,.08),transparent);opacity:0;transition:opacity .4s;pointer-events:none;}
-.acard:hover .aimg-wrap::after{opacity:1;}
-/* Skeleton loading */
-.skeleton{background:linear-gradient(90deg,var(--dark3) 25%,var(--dark4) 50%,var(--dark3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;}
-@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
-.aph{width:100%;height:200px;background:var(--dark3);display:flex;align-items:center;justify-content:center;color:rgba(240,240,240,.06);font-size:26px;}
-/* Lien unique annonce highlight */
-.acard.highlighted{border-color:var(--neon);box-shadow:0 0 40px rgba(0,255,136,.2);animation:highlightPulse 2s ease-in-out 3;}
-@keyframes highlightPulse{0%,100%{box-shadow:0 0 20px rgba(0,255,136,.1);}50%{box-shadow:0 0 50px rgba(0,255,136,.4);}}
-.abody{padding:17px;}
-.adate{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--neon);margin-bottom:7px;}
-.atitle{font-family:var(--ft);font-size:14px;font-weight:700;margin-bottom:7px;line-height:1.3;}
-.adesc{font-family:var(--fh);font-size:13px;color:rgba(240,240,240,.38);line-height:1.6;}
-.ashare{display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(240,240,240,.04);flex-wrap:wrap;}
-.sbtn{display:flex;align-items:center;gap:4px;background:none;border:1px solid rgba(240,240,240,.08);color:rgba(240,240,240,.35);padding:5px 9px;font-size:9px;letter-spacing:1px;transition:all .3s;}
-.sbtn:hover{border-color:var(--neon);color:var(--neon);}
-.sbtn svg{width:10px;height:10px;fill:currentColor;}
-.sbtn.copied{border-color:var(--neon);color:var(--neon);background:rgba(0,255,136,.08);}
-/* Voir toutes */
-.ann-see-all{text-align:center;margin-top:28px;}
-.btn-see-all{background:none;border:1px solid rgba(0,255,136,.25);color:var(--neon);padding:12px 32px;font-family:var(--fb);font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:all .3s;}
-.btn-see-all:hover{background:rgba(0,255,136,.08);border-color:var(--neon);}
-/* Watermark */
-.aimg-wrap .watermark{position:absolute;bottom:8px;right:8px;font-family:var(--ft);font-size:8px;letter-spacing:2px;color:rgba(0,255,136,.4);background:rgba(3,3,3,.6);padding:2px 6px;pointer-events:none;z-index:3;}
+.ann-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;}
+.ann-card{background:var(--glass);border:1px solid rgba(0,255,136,.1);overflow:hidden;cursor:none;transition:all .4s;position:relative;}
+.ann-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,136,.05),transparent 55%);opacity:0;transition:opacity .4s;}
+.ann-card:hover{transform:translateY(-5px);border-color:rgba(0,255,136,.35);box-shadow:0 20px 56px rgba(0,0,0,.55),0 0 24px rgba(0,255,136,.07);}
+.ann-card:hover::after{opacity:1;}
+.ann-img{width:100%;height:170px;object-fit:cover;display:block;}
+.ann-ph{width:100%;height:170px;background:var(--dark3);display:flex;align-items:center;justify-content:center;color:rgba(240,240,240,.08);font-size:32px;}
+.ann-body{padding:20px;}
+.ann-date{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--neon);margin-bottom:9px;}
+.ann-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:9px;line-height:1.35;}
+.ann-desc{font-size:12px;color:rgba(240,240,240,.4);line-height:1.7;}
+.ann-empty{grid-column:1/-1;text-align:center;padding:72px 20px;color:rgba(240,240,240,.15);font-size:13px;letter-spacing:3px;}
 
-.aempty{grid-column:1/-1;text-align:center;padding:60px 20px;}
-.aempty-icon{font-size:44px;display:block;margin-bottom:14px;animation:eblink 3s infinite;}
-.aempty-txt{font-family:var(--fh);font-size:17px;color:rgba(240,240,240,.18);}
-.aempty-sub{font-size:10px;color:rgba(240,240,240,.09);letter-spacing:2px;margin-top:7px;}
+/* VILLES */
 #villes{background:var(--dark);position:relative;overflow:hidden;}
 #villes::before,#villes::after{content:'';position:absolute;left:0;right:0;height:1px;}
-#villes::before{top:0;background:linear-gradient(90deg,transparent,rgba(0,255,136,.14),transparent);}
-#villes::after{bottom:0;background:linear-gradient(90deg,transparent,rgba(0,255,136,.14),transparent);}
-.vwrap{position:relative;}
-.vscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none;}
-.vscroll::-webkit-scrollbar{display:none;}
-.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:2px;}
-.vitem{background:var(--dark2);padding:38px 18px;text-align:center;transition:all .4s;position:relative;overflow:hidden;}
-.vitem::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--neon);transform:scaleX(0);transition:transform .4s;box-shadow:0 0 12px var(--neon);}
-.vitem:hover{background:var(--dark3);transform:translateY(-3px);}
-.vitem:hover::before{transform:scaleX(1);}
-.vn{font-family:var(--ft);font-size:30px;color:rgba(0,255,136,.08);line-height:1;margin-bottom:5px;display:block;font-weight:900;}
-.vname{font-family:var(--ft);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
-.vsub{font-family:var(--fh);font-size:11px;color:var(--gray);margin-top:4px;}
-.varrow{display:none;position:absolute;right:0;top:50%;transform:translateY(-50%);background:linear-gradient(to left,var(--dark),transparent);width:50px;height:100%;align-items:center;justify-content:flex-end;padding-right:10px;pointer-events:none;}
-.varrow span{color:var(--neon);font-size:16px;animation:arrb 1.5s ease-in-out infinite;}
-@keyframes arrb{0%,100%{transform:translateX(0);}50%{transform:translateX(3px);}}
+#villes::before{top:0;background:linear-gradient(90deg,transparent,rgba(0,255,136,.18),transparent);}
+#villes::after{bottom:0;background:linear-gradient(90deg,transparent,rgba(0,255,136,.18),transparent);}
+/* Mobile: scroll horizontal */
+.villes-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px;}
+.villes-scroll::-webkit-scrollbar{height:2px;}
+.villes-scroll::-webkit-scrollbar-track{background:var(--dark2);}
+.villes-scroll::-webkit-scrollbar-thumb{background:var(--neon);}
+.villes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:2px;}
+.ville-item{background:var(--dark2);padding:44px 20px;text-align:center;cursor:none;transition:all .4s;position:relative;overflow:hidden;}
+.ville-item::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--neon);transform:scaleX(0);transition:transform .4s;box-shadow:0 0 14px var(--neon);}
+.ville-item:hover{background:var(--dark3);transform:translateY(-4px);}
+.ville-item:hover::before{transform:scaleX(1);}
+.v-n{font-family:'Bebas Neue',sans-serif;font-size:36px;color:rgba(0,255,136,.1);line-height:1;margin-bottom:5px;display:block;}
+.v-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.v-sub{font-size:9px;color:var(--gray);letter-spacing:2px;margin-top:5px;}
 
 /* LOCKED */
-#locked-sec{padding:60px 40px;background:var(--black);text-align:center;}
-.lbox{max-width:480px;margin:0 auto;background:var(--dark2);border:1px solid rgba(0,255,136,.08);padding:44px 30px;}
-.lkicon{font-size:46px;margin-bottom:14px;display:block;animation:lshk 6s ease-in-out infinite;}
-@keyframes lshk{0%,88%,100%{transform:rotate(0);}91%{transform:rotate(-5deg);}95%{transform:rotate(5deg);}}
-.lktitle{font-family:var(--ft);font-size:clamp(20px,4vw,38px);letter-spacing:2px;margin-bottom:10px;font-weight:900;}
-.lksub{font-family:var(--fh);font-size:15px;color:rgba(240,240,240,.33);line-height:1.6;margin-bottom:18px;}
-.lktimer{font-family:var(--ft);font-size:22px;color:var(--neon);letter-spacing:4px;font-weight:900;}
+#locked-sec{padding:72px 48px;background:var(--black);text-align:center;}
+.locked-box{max-width:520px;margin:0 auto;background:var(--dark2);border:1px solid rgba(0,255,136,.1);padding:52px 36px;}
+.lk-icon{font-size:52px;margin-bottom:18px;display:block;animation:lshk 6s ease-in-out infinite;}
+@keyframes lshk{0%,88%,100%{transform:rotate(0);}91%{transform:rotate(-5deg);}95%{transform:rotate(5deg);}98%{transform:rotate(-3deg);}}
+.lk-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,4vw,44px);letter-spacing:3px;margin-bottom:11px;}
+.lk-sub{font-size:13px;color:rgba(240,240,240,.38);line-height:1.7;margin-bottom:22px;letter-spacing:1px;}
+.lk-timer{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--neon);letter-spacing:4px;text-shadow:0 0 18px rgba(0,255,136,.35);}
 
 /* NEWSLETTER */
-#newsletter{background:var(--dark);padding:60px 40px;text-align:center;}
-.nlwrap{max-width:420px;margin:0 auto;}
-.nltitle{font-family:var(--ft);font-size:clamp(24px,5vw,46px);letter-spacing:1px;margin-bottom:10px;font-weight:900;}
-.nlsub{font-family:var(--fh);font-size:15px;color:rgba(240,240,240,.33);margin-bottom:22px;line-height:1.6;}
-.nlform{display:flex;}
-.nlinp{flex:1;background:var(--dark2);border:1px solid rgba(0,255,136,.14);border-right:none;color:var(--white);padding:11px 15px;font-family:var(--fb);font-size:13px;outline:none;transition:border-color .3s;min-width:0;}
-.nlinp:focus{border-color:var(--neon);}
-.nlinp::placeholder{color:var(--gray);}
-.nlbtn{background:var(--neon);color:var(--black);border:none;padding:11px 16px;font-family:var(--fb);font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;transition:all .3s;white-space:nowrap;flex-shrink:0;}
-.nlok{display:none;font-family:var(--fh);color:var(--neon);font-size:15px;margin-top:9px;}
-.nlok.show{display:block;animation:fup .4s both;}
-
-/* GALERIE */
-#galerie{background:var(--black);}
-.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:3px;}
-.gitem{position:relative;overflow:hidden;aspect-ratio:1;}
-.gitem img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
-.gitem:hover img{transform:scale(1.05);}
-.gitem::after{content:'';position:absolute;inset:0;background:rgba(0,255,136,0);transition:background .3s;}
-.gitem:hover::after{background:rgba(0,255,136,.06);}
-.gcap{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(to top,rgba(3,3,3,.8),transparent);font-family:var(--fh);font-size:12px;color:var(--white);transform:translateY(100%);transition:transform .3s;}
-.gitem:hover .gcap{transform:translateY(0);}
-.gempty{grid-column:1/-1;text-align:center;padding:44px;font-family:var(--fh);font-size:16px;color:rgba(240,240,240,.14);}
+#newsletter{background:var(--dark);padding:72px 48px;text-align:center;}
+.nl-wrap{max-width:460px;margin:0 auto;}
+.nl-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,52px);letter-spacing:2px;margin-bottom:11px;}
+.nl-sub{font-size:13px;color:rgba(240,240,240,.38);margin-bottom:28px;letter-spacing:1px;line-height:1.7;}
+.nl-form{display:flex;}
+.nl-inp{flex:1;background:var(--dark2);border:1px solid rgba(0,255,136,.18);border-right:none;color:var(--white);padding:13px 18px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .3s;min-width:0;}
+.nl-inp:focus{border-color:var(--neon);}
+.nl-inp::placeholder{color:var(--gray);}
+.nl-btn{background:var(--neon);color:var(--black);border:none;padding:13px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:none;transition:all .3s;white-space:nowrap;flex-shrink:0;}
+.nl-btn:hover{box-shadow:0 0 26px rgba(0,255,136,.45);}
+.nl-ok{display:none;color:var(--neon);font-size:12px;letter-spacing:1px;margin-top:10px;}
+.nl-ok.show{display:block;animation:fup .4s both;}
 
 /* SPONSORS */
-#sponsors{background:var(--dark);}
-.mqwrap{overflow:hidden;position:relative;margin-top:38px;}
-.mqwrap::before,.mqwrap::after{content:'';position:absolute;top:0;bottom:0;width:60px;z-index:2;}
-.mqwrap::before{left:0;background:linear-gradient(to right,var(--dark),transparent);}
-.mqwrap::after{right:0;background:linear-gradient(to left,var(--dark),transparent);}
-.mqtrack{display:flex;gap:11px;width:max-content;animation:mq 20s linear infinite;}
+#sponsors{background:var(--black);}
+.mq-wrap{overflow:hidden;position:relative;margin-top:44px;}
+.mq-wrap::before,.mq-wrap::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;}
+.mq-wrap::before{left:0;background:linear-gradient(to right,var(--black),transparent);}
+.mq-wrap::after{right:0;background:linear-gradient(to left,var(--black),transparent);}
+.mq-track{display:flex;gap:14px;width:max-content;animation:mq 20s linear infinite;}
 @keyframes mq{to{transform:translateX(-50%);}}
-.spcard{background:var(--dark2);border:1px solid rgba(0,255,136,.06);padding:14px 26px;min-width:110px;height:58px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;font-family:var(--fb);font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(240,240,240,.2);transition:all .3s;white-space:nowrap;}
-.spcard:hover{border-color:var(--neon);color:var(--neon);}
+.sp-card{background:var(--dark2);border:1px solid rgba(0,255,136,.07);padding:18px 32px;min-width:130px;height:66px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;color:rgba(240,240,240,.22);transition:all .3s;white-space:nowrap;}
+.sp-card:hover{border-color:var(--neon);color:var(--neon);}
+.sp-cat{font-size:8px;opacity:.5;letter-spacing:1px;}
 
 /* SOCIALS */
-#socials{background:var(--black);text-align:center;}
-.socgrid{display:flex;justify-content:center;gap:13px;flex-wrap:wrap;margin-top:38px;}
-.socbtn{display:flex;flex-direction:column;align-items:center;gap:9px;border:1px solid rgba(0,255,136,.11);background:var(--dark2);padding:22px 26px;text-decoration:none;color:var(--white);transition:all .4s;min-width:120px;position:relative;overflow:hidden;}
-.socbtn::before{content:'';position:absolute;bottom:0;left:0;right:0;height:0;background:var(--neon);transition:height .4s;z-index:0;}
-.socbtn:hover{color:var(--black);}
-.socbtn:hover::before{height:100%;}
-.socbtn>*{position:relative;z-index:1;}
-.socbtn svg{width:22px;height:22px;fill:currentColor;}
-.socname{font-family:var(--fb);font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
-.sochandle{font-family:var(--fh);font-size:11px;opacity:.45;}
-
-/* FOOTER */
-footer{background:var(--black);border-top:1px solid rgba(0,255,136,.06);padding:28px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
-.ftlogo{font-family:var(--ft);font-size:15px;letter-spacing:4px;font-weight:900;}
-.ftlogo em{color:var(--neon);font-style:normal;}
-.ftcopy{font-family:var(--fh);font-size:13px;color:var(--gray);}
-.ftsocs{display:flex;gap:10px;}
-.ftsoc{width:30px;height:30px;border:1px solid rgba(240,240,240,.09);display:flex;align-items:center;justify-content:center;text-decoration:none;color:rgba(240,240,240,.28);transition:all .3s;}
-.ftsoc:hover{border-color:var(--neon);color:var(--neon);}
-.ftsoc svg{width:13px;height:13px;fill:currentColor;}
+#socials{background:var(--dark);text-align:center;}
+.soc-grid{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:44px;}
+.soc-btn{display:flex;flex-direction:column;align-items:center;gap:12px;border:1px solid rgba(0,255,136,.13);background:var(--dark2);padding:28px 36px;text-decoration:none;color:var(--white);cursor:none;transition:all .4s;min-width:140px;position:relative;overflow:hidden;}
+.soc-btn::before{content:'';position:absolute;bottom:0;left:0;right:0;height:0;background:var(--neon);transition:height .4s;z-index:0;}
+.soc-btn:hover{color:var(--black);}
+.soc-btn:hover::before{height:100%;}
+.soc-btn>*{position:relative;z-index:1;}
+/* SVG icons */
+.soc-icon svg{width:28px;height:28px;fill:currentColor;transition:fill .3s;}
+.soc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;}
+.soc-handle{font-size:10px;opacity:.5;}
 
 /* EASTER EGG */
-#easter{position:fixed;inset:0;z-index:99995;background:rgba(3,3,3,.97);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;}
+#easter{position:fixed;inset:0;z-index:99995;background:rgba(3,3,3,.97);display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;text-align:center;}
 #easter.show{display:flex;animation:fup .4s both;}
-.eetitle{font-family:var(--ft);font-size:clamp(38px,9vw,95px);color:var(--neon);text-shadow:0 0 55px rgba(0,255,136,.5);animation:glitch 2s infinite;font-weight:900;}
-.eesub{font-family:var(--fh);font-size:17px;color:rgba(240,240,240,.38);}
-.eeclose{position:absolute;top:16px;right:16px;background:none;border:1px solid rgba(240,240,240,.14);color:var(--white);width:36px;height:36px;font-size:14px;cursor:pointer;transition:all .3s;}
-.eeclose:hover{border-color:var(--neon);color:var(--neon);}
+.ee-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,10vw,110px);color:var(--neon);text-shadow:0 0 70px rgba(0,255,136,.55);animation:glitch 2s infinite;}
+@keyframes glitch{0%,100%{text-shadow:0 0 70px rgba(0,255,136,.55);}25%{text-shadow:4px 0 0 rgba(255,0,80,.5),0 0 70px rgba(0,255,136,.55);}75%{text-shadow:-4px 0 0 rgba(0,180,255,.5),0 0 70px rgba(0,255,136,.55);}}
+.ee-close{position:absolute;top:20px;right:20px;background:none;border:1px solid rgba(240,240,240,.18);color:var(--white);width:40px;height:40px;font-size:16px;cursor:pointer;transition:all .3s;}
+.ee-close:hover{border-color:var(--neon);color:var(--neon);}
+
+/* FOOTER */
+footer{background:var(--black);border-top:1px solid rgba(0,255,136,.07);padding:36px 48px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+.ft-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:5px;}
+.ft-logo em{color:var(--neon);font-style:normal;}
+.ft-copy{font-size:10px;color:var(--gray);letter-spacing:1px;}
 
 /* AUTH MODAL */
-.mbg{position:fixed;inset:0;z-index:99500;background:rgba(3,3,3,.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:18px;cursor:auto;}
-.mbg.show{display:flex;animation:fup .3s both;}
-.mbox{background:var(--dark2);border:1px solid rgba(0,255,136,.14);padding:38px;width:100%;max-width:370px;position:relative;cursor:auto;}
-.mbox *{cursor:auto;}
-.mbox button{cursor:pointer !important;}
-.mbox .fbtn{cursor:pointer !important;}
-.mbox::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);}
-.mlogo{font-family:var(--ft);font-size:20px;letter-spacing:3px;text-align:center;margin-bottom:5px;font-weight:900;}
-.mlogo em{color:var(--neon);font-style:normal;}
-.msub{text-align:center;font-family:var(--fh);font-size:13px;color:var(--gray);margin-bottom:26px;}
-.mtabs{display:flex;gap:2px;margin-bottom:22px;}
-.mtab{flex:1;background:var(--dark3);border:none;border-bottom:2px solid transparent;color:rgba(240,240,240,.32);padding:9px;font-family:var(--fb);font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .3s;}
-.mtab.on{color:var(--neon);border-bottom-color:var(--neon);background:var(--dark4);}
-.mpane{display:none;}
-.mpane.on{display:block;animation:fup .3s both;}
-.merr{background:rgba(255,68,68,.07);border:1px solid rgba(255,68,68,.2);color:var(--red);padding:8px 11px;font-family:var(--fb);font-size:11px;margin-bottom:12px;display:none;}
-.merr.show{display:block;}
-.mblk{background:rgba(255,140,0,.07);border:1px solid rgba(255,140,0,.18);color:var(--orange);padding:8px 11px;font-family:var(--fb);font-size:11px;margin-bottom:12px;display:none;}
-.mblk.show{display:block;}
-.minfo{background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.16);color:var(--neon);padding:10px 13px;font-family:var(--fh);font-size:14px;display:block;line-height:1.5;}
-.flbl{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--neon);margin-bottom:6px;}
-.finp{width:100%;background:var(--dark3);border:1px solid rgba(0,255,136,.09);color:var(--white);padding:11px 13px;font-family:var(--fb);font-size:13px;outline:none;transition:border-color .3s;margin-bottom:13px;cursor:text;}
+.modal-bg{position:fixed;inset:0;z-index:99500;background:rgba(3,3,3,.95);backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg.show{display:flex;animation:fup .3s both;}
+.modal-box{background:var(--dark2);border:1px solid rgba(0,255,136,.18);padding:44px;width:100%;max-width:400px;position:relative;}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon),transparent);}
+.modal-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;text-align:center;margin-bottom:6px;}
+.modal-logo em{color:var(--neon);font-style:normal;}
+.modal-sub{text-align:center;font-size:11px;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px;}
+.modal-tabs{display:flex;gap:2px;margin-bottom:28px;}
+.modal-tab{flex:1;background:var(--dark3);border:none;color:rgba(240,240,240,.4);padding:10px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;transition:all .3s;border-bottom:2px solid transparent;}
+.modal-tab.on{color:var(--neon);border-bottom-color:var(--neon);background:var(--dark4);}
+.modal-pane{display:none;}
+.modal-pane.on{display:block;animation:fup .3s both;}
+.modal-err{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.25);color:var(--red);padding:9px 14px;font-size:12px;margin-bottom:16px;display:none;letter-spacing:.5px;}
+.modal-err.show{display:block;}
+.modal-info{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);color:var(--neon);padding:9px 14px;font-size:12px;margin-bottom:16px;display:none;letter-spacing:.5px;}
+.modal-info.show{display:block;}
+.flbl{display:block;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--neon);margin-bottom:7px;}
+.finp{width:100%;background:var(--dark3);border:1px solid rgba(0,255,136,.12);color:var(--white);padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .3s;margin-bottom:16px;}
 .finp:focus{border-color:var(--neon);}
-.fbtn{width:100%;background:var(--neon);color:var(--black);border:none;padding:13px;font-family:var(--fb);font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer !important;transition:all .3s;}
-.fbtn:hover{box-shadow:0 0 28px rgba(0,255,136,.32);}
-.fbtn:disabled{opacity:.5;cursor:not-allowed !important;}
-.mclose{position:absolute;top:11px;right:11px;background:none;border:none;color:var(--gray);font-size:16px;cursor:pointer;}
-.mclose:hover{color:var(--neon);}
+.f-btn{width:100%;background:var(--neon);color:var(--black);border:none;padding:14px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .3s;}
+.f-btn:hover{box-shadow:0 0 35px rgba(0,255,136,.35);}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer;line-height:1;}
+.modal-close:hover{color:var(--neon);}
 
 /* ADMIN */
-#admin{position:fixed;inset:0;z-index:99000;background:rgba(3,3,3,.98);display:none;overflow-y:auto;}
+#admin{position:fixed;inset:0;z-index:99000;background:rgba(3,3,3,.98);backdrop-filter:blur(20px);display:none;overflow-y:auto;}
 #admin.show{display:block;animation:fup .3s both;}
-.atop{position:sticky;top:0;z-index:10;background:rgba(3,3,3,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,255,136,.06);padding:11px 34px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
-.abrand{font-family:var(--ft);font-size:15px;letter-spacing:2px;font-weight:900;}
-.abrand em{color:var(--neon);font-style:normal;}
-.auname{font-size:12px;font-weight:600;}
-.aurole{font-size:9px;color:var(--neon);letter-spacing:2px;text-transform:uppercase;}
-.bout{background:none;border:1px solid rgba(255,68,68,.22);color:rgba(255,68,68,.48);padding:5px 11px;font-size:9px;letter-spacing:1px;cursor:pointer;transition:all .3s;font-family:var(--fb);}
-.bout:hover{border-color:var(--red);color:var(--red);}
-.abody{padding:20px 34px 60px;}
-.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:11px;margin-bottom:22px;}
-.scard{background:var(--dark2);border:1px solid rgba(0,255,136,.06);padding:14px;text-align:center;}
-.sn{font-family:var(--ft);font-size:30px;color:var(--neon);line-height:1;font-weight:900;}
-.sl{font-size:8px;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
-.atabs{display:flex;gap:2px;margin-bottom:22px;overflow-x:auto;scrollbar-width:none;}
-.atabs::-webkit-scrollbar{display:none;}
-.atab{background:var(--dark2);border:none;border-bottom:2px solid transparent;color:rgba(240,240,240,.33);padding:8px 14px;font-family:var(--fb);font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .3s;white-space:nowrap;flex-shrink:0;}
-.atab.on{background:var(--dark3);color:var(--neon);border-bottom-color:var(--neon);}
-.atab:hover:not(.on){color:var(--white);}
+.adm-top{position:sticky;top:0;z-index:10;background:rgba(3,3,3,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,255,136,.08);padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.adm-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;}
+.adm-brand em{color:var(--neon);font-style:normal;}
+.adm-uinfo{text-align:right;}
+.adm-uname{font-size:13px;font-weight:600;}
+.adm-urole{font-size:9px;color:var(--neon);letter-spacing:2px;text-transform:uppercase;}
+.btn-out{background:none;border:1px solid rgba(255,68,68,.28);color:rgba(255,68,68,.55);padding:6px 14px;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .3s;font-family:'DM Sans',sans-serif;}
+.btn-out:hover{border-color:var(--red);color:var(--red);}
+.adm-body{padding:28px 40px 72px;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;margin-bottom:28px;}
+.stat-card{background:var(--dark2);border:1px solid rgba(0,255,136,.07);padding:18px;text-align:center;}
+.sn{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--neon);line-height:1;text-shadow:0 0 16px rgba(0,255,136,.28);}
+.sl{font-size:9px;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.adm-tabs{display:flex;gap:2px;margin-bottom:28px;flex-wrap:wrap;overflow-x:auto;}
+.adm-tab{background:var(--dark2);border:none;border-bottom:2px solid transparent;color:rgba(240,240,240,.38);padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:1px;cursor:pointer;transition:all .3s;white-space:nowrap;flex-shrink:0;}
+.adm-tab.on{background:var(--dark3);color:var(--neon);border-bottom-color:var(--neon);}
+.adm-tab:hover:not(.on){color:var(--white);}
 .tp{display:none;}.tp.on{display:block;animation:fup .3s both;}
-.panel{background:var(--dark2);border:1px solid rgba(0,255,136,.06);padding:20px;margin-bottom:16px;}
-.pt{font-family:var(--fb);font-size:13px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(240,240,240,.04);display:flex;align-items:center;gap:6px;}
+.panel{background:var(--dark2);border:1px solid rgba(0,255,136,.07);padding:24px;margin-bottom:20px;}
+.pt{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(240,240,240,.04);display:flex;align-items:center;gap:7px;}
 .pt em{color:var(--neon);font-style:normal;}
-.fg{margin-bottom:13px;}
-.fl2{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--neon);margin-bottom:6px;font-family:var(--fb);}
-.fc{width:100%;background:var(--dark3);border:1px solid rgba(0,255,136,.08);color:var(--white);padding:10px 12px;font-family:var(--fb);font-size:12px;outline:none;transition:border-color .3s;}
+.fg{margin-bottom:16px;}
+.flbl2{display:block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--neon);margin-bottom:7px;}
+.fc{width:100%;background:var(--dark3);border:1px solid rgba(0,255,136,.1);color:var(--white);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .3s;}
 .fc:focus{border-color:var(--neon);}
-textarea.fc{resize:vertical;min-height:72px;}
+textarea.fc{resize:vertical;min-height:80px;}
 select.fc option{background:var(--dark3);}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-/* Upload */
-.upa{border:1px dashed rgba(0,255,136,.18);padding:18px;text-align:center;transition:all .3s;background:var(--dark3);position:relative;cursor:pointer;}
-.upa:hover{border-color:var(--neon);background:rgba(0,255,136,.02);}
-.upa input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.upatxt{font-family:var(--fb);font-size:10px;color:rgba(240,240,240,.28);letter-spacing:1px;}
-.upatxt em{color:var(--neon);font-style:normal;display:block;font-size:18px;margin-bottom:4px;}
-.uprev{width:100%;height:90px;object-fit:cover;margin-top:10px;display:none;border:1px solid rgba(0,255,136,.09);}
-.upload-ld{display:none;color:var(--neon);font-size:10px;margin-top:7px;letter-spacing:2px;}
-.upoad-ld.show,.upload-ld.show{display:block;animation:pulse .8s infinite;}
-.bta{background:var(--neon);color:var(--black);border:none;padding:9px 20px;font-family:var(--fb);font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .3s;}
-.bta:hover{box-shadow:0 0 18px rgba(0,255,136,.3);}
-.bta.danger{background:var(--red);color:var(--white);}
-.bta.sm{padding:5px 10px;font-size:9px;}
-.bta.ghost{background:none;border:1px solid rgba(0,255,136,.22);color:var(--neon);}
-.bta.ghost:hover{background:var(--neon);color:var(--black);}
-.alist{margin-top:13px;display:flex;flex-direction:column;gap:8px;}
-.ali{background:var(--dark3);border:1px solid rgba(240,240,240,.03);padding:10px 13px;display:flex;justify-content:space-between;align-items:center;gap:9px;}
-.alit{font-size:12px;font-weight:600;}
-.alim{font-size:9px;color:var(--gray);margin-top:2px;}
-.alia{display:flex;gap:6px;flex-shrink:0;}
-.okmsg{background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.18);color:var(--neon);padding:8px 11px;font-size:10px;letter-spacing:1px;margin-bottom:11px;display:none;}
-.okmsg.show{display:block;animation:fup .3s both;}
-.trow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(240,240,240,.03);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+/* Upload button */
+.upload-area{border:1px dashed rgba(0,255,136,.25);padding:24px;text-align:center;cursor:pointer;transition:all .3s;background:var(--dark3);position:relative;}
+.upload-area:hover{border-color:var(--neon);background:rgba(0,255,136,.03);}
+.upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-txt{font-size:12px;color:rgba(240,240,240,.35);letter-spacing:1px;}
+.upload-txt em{color:var(--neon);font-style:normal;display:block;font-size:22px;margin-bottom:6px;}
+.upload-preview{width:100%;height:120px;object-fit:cover;margin-top:12px;display:none;}
+.btn-a{background:var(--neon);color:var(--black);border:none;padding:11px 24px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .3s;}
+.btn-a:hover{box-shadow:0 0 22px rgba(0,255,136,.35);}
+.btn-a.danger{background:var(--red);color:var(--white);}
+.btn-a.sm{padding:6px 12px;font-size:10px;}
+.al{margin-top:16px;display:flex;flex-direction:column;gap:9px;}
+.ali{background:var(--dark3);border:1px solid rgba(240,240,240,.03);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.ali-t{font-size:13px;font-weight:600;}
+.ali-m{font-size:10px;color:var(--gray);margin-top:2px;}
+.ali-act{display:flex;gap:7px;flex-shrink:0;}
+.ok-msg{background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.22);color:var(--neon);padding:9px 14px;font-size:11px;letter-spacing:1px;margin-bottom:14px;display:none;}
+.ok-msg.show{display:block;animation:fup .3s both;}
+.trow{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(240,240,240,.03);}
 .trow:last-child{border-bottom:none;}
-.tlbl{font-size:12px;color:rgba(240,240,240,.58);}
-.tdesc{font-size:9px;color:var(--gray);margin-top:2px;}
-.tog{position:relative;width:38px;height:20px;flex-shrink:0;}
+.tlbl{font-size:12px;color:rgba(240,240,240,.65);}
+.tdesc{font-size:10px;color:var(--gray);margin-top:2px;}
+.tog{position:relative;width:42px;height:22px;flex-shrink:0;}
 .tog input{opacity:0;width:0;height:0;}
-.tsl{position:absolute;cursor:pointer;inset:0;background:var(--dark4);border:1px solid rgba(240,240,240,.07);transition:.3s;}
-.tsl::before{content:'';position:absolute;height:12px;width:12px;left:3px;bottom:3px;background:var(--gray);transition:.3s;}
-.tog input:checked+.tsl{background:rgba(0,255,136,.1);border-color:var(--neon);}
-.tog input:checked+.tsl::before{transform:translateX(18px);background:var(--neon);box-shadow:0 0 6px var(--neon);}
-/* Team */
-.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px;}
-.tcard{background:var(--dark3);border:1px solid rgba(0,255,136,.06);padding:16px;}
-.tav{width:38px;height:38px;border-radius:50%;background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);display:flex;align-items:center;justify-content:center;font-family:var(--ft);font-size:15px;color:var(--neon);margin-bottom:10px;font-weight:900;}
-.tnm{font-size:13px;font-weight:600;}
-.tem{font-size:10px;color:var(--gray);margin-top:2px;}
-.trl{font-size:9px;color:var(--neon);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
-.tst{display:inline-flex;align-items:center;gap:3px;margin-top:7px;font-size:9px;color:var(--gray);}
-.tdot{width:4px;height:4px;border-radius:50%;background:var(--neon);box-shadow:0 0 4px var(--neon);}
-/* Confirm */
-.cfbg{position:fixed;inset:0;z-index:99800;background:rgba(3,3,3,.9);display:none;align-items:center;justify-content:center;padding:18px;}
-.cfbg.show{display:flex;}
-.cfbox{background:var(--dark2);border:1px solid rgba(255,68,68,.18);padding:28px;max-width:300px;width:100%;text-align:center;}
-.cftitle{font-family:var(--ft);font-size:17px;margin-bottom:9px;font-weight:900;}
-.cfsub{font-family:var(--fh);font-size:14px;color:rgba(240,240,240,.38);margin-bottom:20px;}
-.cfbtns{display:flex;gap:9px;justify-content:center;}
+.tslider{position:absolute;cursor:pointer;inset:0;background:var(--dark4);border:1px solid rgba(240,240,240,.08);transition:.3s;}
+.tslider::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:var(--gray);transition:.3s;}
+.tog input:checked+.tslider{background:rgba(0,255,136,.12);border-color:var(--neon);}
+.tog input:checked+.tslider::before{transform:translateX(20px);background:var(--neon);box-shadow:0 0 7px var(--neon);}
+.acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.acc-card{background:var(--dark3);border:1px solid rgba(0,255,136,.08);padding:20px;}
+.acc-av{width:44px;height:44px;border-radius:50%;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--neon);margin-bottom:12px;}
+.acc-nm{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;}
+.acc-rl{font-size:10px;color:var(--neon);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.acc-pw{font-size:10px;color:rgba(240,240,240,.25);margin-top:7px;}
+.acc-st{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:10px;color:var(--gray);}
+.acc-dot{width:4px;height:4px;border-radius:50%;background:var(--neon);box-shadow:0 0 5px var(--neon);}
 
 /* NOISE */
-.noise{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:128px;}
-.reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.022;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:128px;}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .65s ease,transform .65s ease;}
 .reveal.in{opacity:1;transform:translateY(0);}
-/* Rich text */
-.richtext-toolbar{display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;}
-.rtb{background:var(--dark3);border:1px solid rgba(0,255,136,.1);color:var(--white);padding:4px 10px;font-size:12px;cursor:pointer;transition:all .3s;font-family:var(--fb);}
-.rtb:hover{border-color:var(--neon);color:var(--neon);}
-.richtext-editor{word-break:break-word;line-height:1.7;}
-.richtext-editor:empty::before{content:attr(placeholder);color:var(--gray);pointer-events:none;}
-/* Tags */
-.tag-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.tag{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:var(--neon);padding:3px 10px;font-size:9px;letter-spacing:1px;}
-/* Analytics */
-.analytics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
-.ana-card{background:var(--dark3);border:1px solid rgba(0,255,136,.06);padding:16px;text-align:center;}
-.ana-num{font-family:var(--ft);font-size:28px;color:var(--neon);line-height:1;font-weight:900;}
-.ana-lbl{font-size:9px;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
-.ana-chart{background:var(--dark3);border:1px solid rgba(0,255,136,.06);padding:16px;margin-bottom:16px;}
-.ana-chart-title{font-size:11px;color:var(--neon);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase;}
-.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px;}
-.chart-bar{flex:1;background:rgba(0,255,136,.15);border-top:1px solid var(--neon);transition:height .5s;position:relative;min-height:4px;}
-.chart-bar:hover{background:rgba(0,255,136,.3);}
-.chart-labels{display:flex;gap:4px;margin-top:6px;}
-.chart-lbl{flex:1;font-size:7px;color:var(--gray);text-align:center;letter-spacing:1px;}
-/* Mode maintenance */
-.maintenance-overlay{position:fixed;inset:0;z-index:99999;background:var(--black);display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;}
-.maintenance-overlay.show{display:flex;}
-.maint-title{font-family:var(--ft);font-size:clamp(28px,6vw,56px);font-weight:900;}
-.maint-title em{color:var(--neon);font-style:normal;}
-.maint-sub{font-family:var(--fh);font-size:18px;color:rgba(240,240,240,.4);}
-/* Logs */
-.log-item{background:var(--dark3);padding:10px 14px;border-left:2px solid rgba(0,255,136,.2);margin-bottom:6px;font-size:11px;font-family:var(--fb);}
-.log-item.action{border-color:var(--neon);}
-.log-item.login{border-color:#4a9eff;}
-.log-item.delete{border-color:var(--red);}
-.log-time{color:var(--gray);font-size:9px;margin-top:2px;}
-/* Export CSV */
-.btn-export{background:none;border:1px solid rgba(0,255,136,.2);color:var(--neon);padding:8px 20px;font-family:var(--fb);font-size:10px;letter-spacing:2px;cursor:pointer;transition:all .3s;}
-.btn-export:hover{background:rgba(0,255,136,.08);}
-
-/* BOTTOM NAV MOBILE */
-#bottom-nav{
-  display:none;position:fixed;bottom:0;left:0;right:0;z-index:990;
-  background:rgba(3,3,3,.97);backdrop-filter:blur(20px);
-  border-top:1px solid rgba(0,255,136,.08);
-  padding:8px 0 env(safe-area-inset-bottom,8px);
-}
-.bnav-items{display:flex;justify-content:space-around;align-items:center;}
-.bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;text-decoration:none;color:rgba(240,240,240,.35);transition:color .3s;border:none;background:none;cursor:pointer;min-width:56px;}
-.bnav-item.active,.bnav-item:hover{color:var(--neon);}
-.bnav-icon{font-size:20px;line-height:1;}
-.bnav-lbl{font-size:8px;letter-spacing:1px;text-transform:uppercase;font-family:var(--fb);}
-
-/* Réactions annonces */
-.reactions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
-.react-btn{background:var(--dark3);border:1px solid rgba(240,240,240,.07);color:rgba(240,240,240,.5);padding:4px 10px;font-size:11px;transition:all .3s;display:flex;align-items:center;gap:4px;border-radius:20px;}
-.react-btn:hover,.react-btn.reacted{border-color:var(--neon);color:var(--white);background:rgba(0,255,136,.08);}
-.react-count{font-size:10px;font-family:var(--fb);}
-
-/* FAQ */
-#faq{background:var(--dark);}
-.faq-item{border-bottom:1px solid rgba(240,240,240,.05);}
-.faq-q{display:flex;justify-content:space-between;align-items:center;padding:18px 0;transition:color .3s;}
-.faq-q:hover{color:var(--neon);}
-.faq-q-txt{font-family:var(--fb);font-size:14px;font-weight:600;}
-.faq-icon{font-size:18px;transition:transform .3s;color:var(--neon);flex-shrink:0;}
-.faq-item.open .faq-icon{transform:rotate(45deg);}
-.faq-a{font-family:var(--fh);font-size:14px;color:rgba(240,240,240,.45);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;}
-.faq-item.open .faq-a{max-height:300px;padding-bottom:16px;}
-
-/* CAPTCHA newsletter */
-.captcha-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.captcha-q{font-family:var(--fb);font-size:13px;color:rgba(240,240,240,.6);}
-.captcha-inp{width:60px;background:var(--dark2);border:1px solid rgba(0,255,136,.15);color:var(--white);padding:8px 10px;font-family:var(--fb);font-size:13px;outline:none;text-align:center;}
-.captcha-inp:focus{border-color:var(--neon);}
-
-/* Pull to refresh */
-#ptr{position:fixed;top:0;left:0;right:0;z-index:9996;height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:height .3s;background:rgba(3,3,3,.9);}
-#ptr.show{height:52px;}
-.ptr-icon{font-size:20px;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
 
 /* RESPONSIVE */
 @media(max-width:768px){
-  nav{padding:12px 16px;}
-  .nav-center,.vis-wrap,.btn-cnx{display:none;}
+  nav{padding:14px 20px;}
+  .nav-center,.vis-wrap,.btn-connexion{display:none;}
   .hamburger{display:flex;}
-  #hero{padding:0 16px 120px;}
-  .sec,#countdown,#teaser,#locked-sec,#newsletter,#galerie,#socials,#sponsors,#faq{padding:48px 16px;}
-  footer{padding:24px 16px 80px;flex-direction:column;text-align:center;}
-  .atop{padding:10px 14px;}
-  .abody{padding:12px 12px 48px;}
+  #hero{padding:0 20px 52px;}
+  .sec,#countdown,#teaser,#locked-sec,#newsletter,#socials,#sponsors{padding:56px 20px;}
+  .villes-grid{grid-template-columns:repeat(3,minmax(140px,1fr));}
+  footer{padding:28px 20px;flex-direction:column;text-align:center;}
+  .adm-top{padding:12px 16px;}
+  .adm-body{padding:16px 16px 56px;}
   .frow{grid-template-columns:1fr;}
-  .shint{display:none;}
-  .varrow{display:flex;}
-  .vgrid{grid-template-columns:repeat(3,minmax(130px,1fr));}
-  .agrid{grid-template-columns:1fr;}
-  .socbtn{min-width:95px;padding:18px 14px;}
-  .cdgrid{gap:0;}
-  #bottom-nav{display:block;}
+  .scroll-hint{display:none;}
+  .modal-box{padding:32px 24px;}
+  .hero-cta{gap:10px;}
+  .btn-p,.btn-g{padding:13px 22px;font-size:11px;}
+  .cd-item{padding:0 12px;}
 }
-@media(max-width:380px){
-  .vgrid{grid-template-columns:repeat(2,minmax(120px,1fr));}
-  h1.htitle{font-size:clamp(42px,13vw,75px);}
+@media(max-width:400px){
+  .villes-grid{grid-template-columns:repeat(2,minmax(140px,1fr));}
 }
 </style>
 </head>
@@ -502,7 +368,14 @@ select.fc option{background:var(--dark3);}
 <div id="cur"></div><div id="cur-r"></div>
 <div id="prog"></div>
 
-
+<!-- SPLASH -->
+<div id="splash">
+  <span style="font-size:40px;animation:eblink 4s infinite;">👁️</span>
+  <div class="sp-logo">MONO<em>SUMMER</em></div>
+  <div class="sp-tag">Le Mono cache bien son jeu…</div>
+  <div class="sp-bar"><div class="sp-fill"></div></div>
+  <div class="sp-dots"><div class="sp-dot"></div><div class="sp-dot"></div><div class="sp-dot"></div></div>
+</div>
 
 <!-- NAV -->
 <nav id="nav">
@@ -510,1295 +383,758 @@ select.fc option{background:var(--dark3);}
   <ul class="nav-center">
     <li><a href="#annonces">Annonces</a></li>
     <li><a href="#villes">Villes</a></li>
-    <li><a href="#galerie">Galerie</a></li>
     <li><a href="#sponsors">Partenaires</a></li>
     <li><a href="#socials">Réseaux</a></li>
   </ul>
   <div class="nav-right">
-    <div class="vis-wrap"><span class="vis-dot"></span><span id="vcnt">—</span> curieux</div>
-    <button class="btn-cnx" onclick="openAuth();return false;">Connexion</button>
-    <button class="hamburger" id="hbg" onclick="toggleMenu()">
+    <div class="vis-wrap"><span class="vis-dot"></span><span id="vis-cnt">—</span> curieux</div>
+    <button class="btn-connexion" onclick="openAuth()">Connexion</button>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
       <span></span><span></span><span></span>
     </button>
   </div>
 </nav>
 
 <!-- MOBILE MENU -->
-<div id="mmenu">
-  <div class="mm-line"></div>
-  <a href="#annonces" class="mm-a" onclick="closeMenu()">Annonces</a>
-  <a href="#villes" class="mm-a" onclick="closeMenu()">Villes</a>
-  <a href="#galerie" class="mm-a" onclick="closeMenu()">Galerie</a>
-  <a href="#sponsors" class="mm-a" onclick="closeMenu()">Partenaires</a>
-  <a href="#socials" class="mm-a" onclick="closeMenu()">Réseaux</a>
-  <div class="mm-line"></div>
-  <button class="mm-cnx" onclick="closeMenu();openAuth();return false;">Connexion</button>
-  <div class="mm-vis"><span id="vcnt2">—</span> personnes suivent déjà 👁️</div>
+<div id="mobile-menu">
+  <div class="mm-neon-line"></div>
+  <a href="#annonces" class="mm-link" onclick="toggleMenu()">Annonces</a>
+  <a href="#villes" class="mm-link" onclick="toggleMenu()">Villes</a>
+  <a href="#sponsors" class="mm-link" onclick="toggleMenu()">Partenaires</a>
+  <a href="#socials" class="mm-link" onclick="toggleMenu()">Réseaux</a>
+  <div class="mm-neon-line"></div>
+  <button class="mm-connexion" onclick="toggleMenu();openAuth()">Connexion</button>
+  <div class="mm-vis"><span class="vis-dot"></span><span id="vis-cnt2">—</span> personnes suivent déjà</div>
 </div>
 
 <!-- HERO -->
 <section id="hero">
-  <canvas id="hcv"></canvas>
+  <div class="grid-bg"></div>
+  <div class="bk1 bokeh"></div><div class="bk2 bokeh"></div><div class="bk3 bokeh"></div>
   <div class="hero-ov"></div>
   <div class="crowd"></div>
   <div class="lasers">
     <div class="laser l1"></div><div class="laser l2"></div><div class="laser l3"></div>
     <div class="laser l4"></div><div class="laser l5"></div><div class="laser l6"></div>
   </div>
-  <div class="hcontent">
-    <div class="hbadge"><b></b><span id="hbadge">Bénin · Département du Mono · 2025</span></div>
-    <h1 class="htitle">MONO<span class="outline">SUMMER</span></h1>
-    <p class="htag"><em id="htag">le Mono cache bien son jeu…</em></p>
-    <div class="hcta">
-      <a href="#socials" class="btn-p" id="hbtn1">⚡ Rejoindre le mouvement</a>
-      <a href="#annonces" class="btn-g" id="hbtn2">Voir les annonces →</a>
+  <div class="hero-content">
+    <div class="hero-badge"><b></b><span id="h-badge">Bénin · Département du Mono · 2025</span></div>
+    <h1 class="hero-title">MONO<span class="outline">SUMMER</span></h1>
+    <p class="hero-tag"><em id="h-tag">Le Mono cache bien son jeu…</em></p>
+    <div class="hero-cta">
+      <a href="#socials" class="btn-p" id="h-btn1">⚡ Rejoindre le mouvement</a>
+      <a href="#annonces" class="btn-g" id="h-btn2">Voir les annonces →</a>
     </div>
   </div>
-  <div class="shint"><span class="stxt">Scroll</span><div class="sline"></div></div>
+  <div class="scroll-hint"><span class="scroll-txt">Scroll</span><div class="scroll-line"></div></div>
 </section>
 
 <!-- TEASER -->
 <section id="teaser">
   <span class="ts-eye">👁️</span>
-  <div class="tsq" id="tsq"><em>le Mono cache bien son jeu…</em></div>
-  <div class="tss" id="tss">un événement 4× plus grand que d'habitude. ne reste pas dans l'ombre.</div>
+  <div class="ts-q" id="ts-q"><em>Le Mono cache bien son jeu…</em></div>
+  <div class="ts-s" id="ts-s">Un événement 4× plus grand que d'habitude. Ne reste pas dans l'ombre.</div>
 </section>
 
 <!-- COUNTDOWN -->
 <div id="countdown">
-  <div class="cdlbl">l'événement arrive dans</div>
-  <div class="cdgrid">
-    <div class="cditem"><span class="cdn" id="cdd">--</span><div class="cdu">Jours</div></div>
-    <div class="cditem"><span class="cdn" id="cdh">--</span><div class="cdu">Heures</div></div>
-    <div class="cditem"><span class="cdn" id="cdm">--</span><div class="cdu">Minutes</div></div>
-    <div class="cditem"><span class="cdn" id="cds">--</span><div class="cdu">Secondes</div></div>
+  <div class="cd-lbl">L'événement arrive dans</div>
+  <div class="cd-grid">
+    <div class="cd-item"><span class="cd-n" id="cd-d">--</span><div class="cd-u">Jours</div></div>
+    <div class="cd-item"><span class="cd-n" id="cd-h">--</span><div class="cd-u">Heures</div></div>
+    <div class="cd-item"><span class="cd-n" id="cd-m">--</span><div class="cd-u">Minutes</div></div>
+    <div class="cd-item"><span class="cd-n" id="cd-s">--</span><div class="cd-u">Secondes</div></div>
   </div>
 </div>
 
 <!-- ANNONCES -->
 <section id="annonces" class="sec">
-  <div class="stag reveal">Actualités</div>
-  <h2 class="stitle reveal">DERNIÈRES<br>ANNONCES</h2>
-  <div class="agrid" id="agrid"><div class="aempty"><span class="aempty-icon">📢</span><div class="aempty-txt">chargement…</div></div></div>
-  <div id="ann-see-all-wrap" class="ann-see-all" style="display:none;"></div>
+  <div class="sec-tag reveal">Actualités</div>
+  <h2 class="sec-title reveal">DERNIÈRES ANNONCES</h2>
+  <div class="ann-grid" id="ann-grid"><div class="ann-empty">Chargement…</div></div>
 </section>
 
 <!-- VILLES -->
 <section id="villes" class="sec">
-  <div class="stag reveal">Le territoire</div>
-  <h2 class="stitle reveal">LES VILLES<br>DU MONO</h2>
-  <div class="vwrap">
-    <div class="vscroll"><div class="vgrid" id="vgrid"></div></div>
-    <div class="varrow"><span>›</span></div>
-  </div>
+  <div class="sec-tag reveal">Le territoire</div>
+  <h2 class="sec-title reveal">LES VILLES DU MONO</h2>
+  <div class="villes-scroll"><div class="villes-grid" id="villes-grid"></div></div>
 </section>
 
 <!-- LOCKED -->
 <section id="locked-sec">
-  <div class="lbox">
-    <span class="lkicon" id="lkicon">🔒</span>
-    <div class="lktitle" id="lktitle">CONTENU BIENTÔT RÉVÉLÉ</div>
-    <p class="lksub" id="lksub">certaines informations sont encore gardées secrètes.<br>revenez dans :</p>
-    <div class="lktimer" id="lktimer">--j --h --m</div>
+  <div class="locked-box">
+    <span class="lk-icon" id="lk-icon">🔒</span>
+    <div class="lk-title" id="lk-title">CONTENU BIENTÔT RÉVÉLÉ</div>
+    <p class="lk-sub" id="lk-sub">Certaines informations sont encore gardées secrètes.<br>Revenez dans :</p>
+    <div class="lk-timer" id="lk-timer">--j --h --m</div>
   </div>
 </section>
 
 <!-- NEWSLETTER -->
 <section id="newsletter">
-  <div class="nlwrap reveal">
-    <h2 class="nltitle" id="nltitle">SOIS LE PREMIER<br>À SAVOIR</h2>
-    <p class="nlsub" id="nlsub">abonne-toi pour ne rien manquer. le Mono Summer arrive et tu dois en faire partie.</p>
-    <div class="captcha-wrap">
-      <span class="captcha-q" id="captcha-q">-- + -- = ?</span>
-      <input type="number" class="captcha-inp" id="captcha-ans" placeholder="?">
+  <div class="nl-wrap reveal">
+    <h2 class="nl-title" id="nl-title">SOIS LE PREMIER<br>À SAVOIR</h2>
+    <p class="nl-sub" id="nl-sub">Abonne-toi pour ne rien manquer. Le Mono Summer arrive et tu dois en faire partie.</p>
+    <div class="nl-form">
+      <input type="email" class="nl-inp" id="nl-email" placeholder="Ton adresse email…">
+      <button class="nl-btn" id="nl-btn" onclick="nlSubmit()">S'abonner</button>
     </div>
-    <div class="nlform">
-      <input type="email" class="nlinp" id="nlemail" placeholder="ton adresse email…">
-      <button class="nlbtn" id="nlbtn" onclick="nlSubmit()">S'abonner</button>
-    </div>
-    <div class="nlok" id="nlok">✅ tu es sur la liste ! on se voit au MONO SUMMER.</div>
+    <div class="nl-ok" id="nl-ok">✅ Tu es sur la liste ! On se voit au MONO SUMMER.</div>
   </div>
-</section>
-
-<!-- GALERIE -->
-<section id="galerie" class="sec">
-  <div class="stag reveal">Ambiance</div>
-  <h2 class="stitle reveal">GALERIE</h2>
-  <div class="ggrid" id="ggrid"><div class="gempty">la galerie sera bientôt disponible… 📸</div></div>
 </section>
 
 <!-- SPONSORS -->
 <section id="sponsors" class="sec">
-  <div class="stag reveal" style="justify-content:center;text-align:center;">Partenaires officiels</div>
-  <h2 class="stitle reveal" style="text-align:center;">NOS SPONSORS</h2>
-  <div class="mqwrap"><div class="mqtrack" id="mqtrack"></div></div>
+  <div class="sec-tag reveal" style="justify-content:center;text-align:center;">Partenaires officiels</div>
+  <h2 class="sec-title reveal" style="text-align:center;">NOS SPONSORS</h2>
+  <div class="mq-wrap"><div class="mq-track" id="mq-track"></div></div>
 </section>
 
 <!-- SOCIALS -->
 <section id="socials" class="sec">
-  <div class="stag reveal" style="justify-content:center;text-align:center;">Communauté</div>
-  <h2 class="stitle reveal" style="text-align:center;">REJOINS<br>LE MOUVEMENT</h2>
-  <div class="socgrid reveal">
-    <a href="#" class="socbtn" id="sfb" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-      <span class="socname">Facebook</span><span class="sochandle" id="fbh">@MonoSummer</span>
+  <div class="sec-tag reveal" style="justify-content:center;text-align:center;">Communauté</div>
+  <h2 class="sec-title reveal" style="text-align:center;">REJOINS<br>LE MOUVEMENT</h2>
+  <div class="soc-grid reveal">
+    <a href="#" class="soc-btn" id="soc-fb" target="_blank">
+      <span class="soc-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></span>
+      <span class="soc-name">Facebook</span>
+      <span class="soc-handle" id="fb-h">@MonoSummer</span>
     </a>
-    <a href="#" class="socbtn" id="stk" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
-      <span class="socname">TikTok</span><span class="sochandle" id="tkh">@mono.summer</span>
+    <a href="#" class="soc-btn" id="soc-tk" target="_blank">
+      <span class="soc-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></span>
+      <span class="soc-name">TikTok</span>
+      <span class="soc-handle" id="tk-h">@mono.summer</span>
     </a>
-    <a href="#" class="socbtn" id="swa" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      <span class="socname">WhatsApp</span><span class="sochandle" id="wah">Canal Officiel</span>
+    <a href="#" class="soc-btn" id="soc-wa" target="_blank">
+      <span class="soc-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>
+      <span class="soc-name">WhatsApp</span>
+      <span class="soc-handle" id="wa-h">Canal Officiel</span>
     </a>
   </div>
-</section>
-
-<!-- PULL TO REFRESH -->
-<div id="ptr"><span class="ptr-icon">🔄</span></div>
-
-<!-- FAQ -->
-<section id="faq" class="sec" style="display:none;">
-  <div class="stag reveal">Questions fréquentes</div>
-  <h2 class="stitle reveal">FAQ</h2>
-  <div id="faq-list"></div>
 </section>
 
 <footer>
-  <div class="ftlogo">MONO<em>.</em>SUMMER</div>
-  <div class="ftcopy" id="ftcopy">© 2025 MONO SUMMER — Bénin 🇧🇯</div>
-  <div class="ftsocs">
-    <a href="#" class="ftsoc" id="ftfb" target="_blank"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
-    <a href="#" class="ftsoc" id="fttk" target="_blank"><svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></a>
-    <a href="#" class="ftsoc" id="ftwa" target="_blank"><svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
-  </div>
+  <div class="ft-logo">MONO<em>.</em>SUMMER</div>
+  <div class="ft-copy" id="ft-copy">© 2025 MONO SUMMER — Bénin 🇧🇯</div>
+  <div style="font-size:10px;color:var(--gray);">Made in Bénin ❤️</div>
 </footer>
 
 <!-- EASTER EGG -->
 <div id="easter">
-  <button class="eeclose" onclick="g('easter').classList.remove('show')">✕</button>
-  <div style="font-size:50px;animation:eblink 3s infinite;">👁️</div>
-  <div class="eetitle">MONO SUMMER</div>
-  <div class="eesub">tu fais partie de ceux qui savent. 🔥</div>
+  <button class="ee-close" onclick="g('easter').classList.remove('show')">✕</button>
+  <div style="font-size:56px;animation:eblink 3s infinite;">👁️</div>
+  <div class="ee-title">MONO SUMMER</div>
+  <div style="font-size:14px;color:rgba(240,240,240,.45);letter-spacing:3px;">Tu fais partie de ceux qui savent. 🔥</div>
 </div>
 
 <!-- AUTH MODAL -->
-<div class="mbg" id="auth-modal">
-  <div class="mbox">
-    <button class="mclose" onclick="closeAuth()">✕</button>
-    <div class="mlogo">MONO<em>.</em>SUMMER</div>
-    <div class="msub">espace membres</div>
-    <div class="mtabs">
-      <button class="mtab on" onclick="authTab('cnx',this)">Connexion</button>
-      <button class="mtab" onclick="authTab('ins',this)">Inscription</button>
+<div class="modal-bg" id="auth-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <div class="modal-logo">MONO<em>.</em>SUMMER</div>
+    <div class="modal-sub">Espace membres</div>
+    <div class="modal-tabs">
+      <button class="modal-tab on" onclick="authTab('connexion',this)">Connexion</button>
+      <button class="modal-tab" onclick="authTab('inscription',this)">Inscription</button>
     </div>
-    <div class="mpane on" id="pane-cnx">
-      <div class="merr" id="lerr">⛔ Accès refusé.</div>
-      <div class="mblk" id="lblk">⏳ Trop de tentatives. Réessayez dans <span id="blktimer">30</span>s.</div>
-      <div class="fg"><label class="flbl">Email</label><input type="email" class="finp" id="lemail" placeholder="votre email" autocomplete="off"></div>
-      <div class="fg"><label class="flbl">Mot de passe</label><input type="password" class="finp" id="lpass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <button class="fbtn" id="lbtn" onclick="doLogin()">Se connecter</button>
+    <!-- Connexion -->
+    <div class="modal-pane on" id="pane-connexion">
+      <div class="modal-err" id="login-err">❌ Identifiants incorrects.</div>
+      <div class="fg"><label class="flbl">Nom d'utilisateur</label><input type="text" class="finp" id="l-user" placeholder="admin1" autocomplete="off"></div>
+      <div class="fg"><label class="flbl">Mot de passe</label><input type="password" class="finp" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="f-btn" onclick="doLogin()">Se connecter</button>
     </div>
-    <div class="mpane" id="pane-ins">
-      <div class="minfo">🔒 les inscriptions ne sont pas disponibles pour l'instant. seuls les comptes autorisés peuvent accéder à cet espace.</div>
-    </div>
-  </div>
-</div>
-
-<!-- CONFIRM -->
-<div class="cfbg" id="cfbg">
-  <div class="cfbox">
-    <div class="cftitle">⚠️ Confirmer</div>
-    <div class="cfsub">Cette action est irréversible.</div>
-    <div class="cfbtns">
-      <button class="bta ghost" onclick="g('cfbg').classList.remove('show')">Annuler</button>
-      <button class="bta danger" id="cfok">Supprimer</button>
+    <!-- Inscription -->
+    <div class="modal-pane" id="pane-inscription">
+      <div class="modal-info show">🔒 Les inscriptions ne sont pas disponibles pour l'instant. Seuls les comptes autorisés peuvent accéder à cet espace.</div>
     </div>
   </div>
 </div>
 
-<!-- ADMIN -->
+<!-- ADMIN PANEL -->
 <div id="admin">
-  <div class="atop">
-    <div class="abrand">MONO<em>.</em>SUMMER — <span style="color:var(--white);font-size:12px;font-family:var(--fb);">Dashboard</span></div>
-    <div style="display:flex;align-items:center;gap:11px;">
-      <div><div class="auname" id="auname">—</div><div class="aurole" id="aurole">—</div></div>
-      <button class="bout" onclick="doLogout()">Déconnexion</button>
+  <div class="adm-top">
+    <div class="adm-brand">MONO<em>.</em>SUMMER — <span style="color:var(--white);font-size:15px;">Dashboard</span></div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="adm-uinfo"><div class="adm-uname" id="adm-uname">—</div><div class="adm-urole" id="adm-urole">—</div></div>
+      <button class="btn-out" onclick="doLogout()">Déconnexion</button>
     </div>
   </div>
-  <div class="abody">
-    <div class="sgrid">
-      <div class="scard"><div class="sn" id="stvis">0</div><div class="sl">Visites</div></div>
-      <div class="scard"><div class="sn" id="stann">0</div><div class="sl">Annonces</div></div>
-      <div class="scard"><div class="sn" id="stsp">0</div><div class="sl">Sponsors</div></div>
-      <div class="scard"><div class="sn" id="stnl">0</div><div class="sl">Abonnés</div></div>
+  <div class="adm-body">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="sn" id="st-vis">0</div><div class="sl">Visites</div></div>
+      <div class="stat-card"><div class="sn" id="st-ann">0</div><div class="sl">Annonces</div></div>
+      <div class="stat-card"><div class="sn" id="st-sp">0</div><div class="sl">Sponsors</div></div>
+      <div class="stat-card"><div class="sn" id="st-nl">0</div><div class="sl">Abonnés</div></div>
     </div>
-    <div class="atabs">
-      <button class="atab on" onclick="tab('tann',this)">📢 Annonces</button>
-      <button class="atab" onclick="tab('tcd',this)">⏳ Countdown</button>
-      <button class="atab" onclick="tab('thero',this)">🎯 Hero</button>
-      <button class="atab" onclick="tab('tteaser',this)">👁️ Teaser</button>
-      <button class="atab" onclick="tab('tvilles',this)">🌍 Villes</button>
-      <button class="atab" onclick="tab('tlocked',this)">🔒 Locked</button>
-      <button class="atab" onclick="tab('tgal',this)">🖼️ Galerie</button>
-      <button class="atab" onclick="tab('tnl',this)">📧 Newsletter</button>
-      <button class="atab" onclick="tab('tsp',this)">🤝 Sponsors</button>
-      <button class="atab" onclick="tab('tsoc',this)">📱 Réseaux</button>
-      <button class="atab" onclick="tab('tfaq',this)">❓ FAQ</button>
-      <button class="atab" onclick="tab('tsite',this)">⚙️ Site</button>
-      <button class="atab" id="tteam-tab" onclick="tab('tteam',this)">👥 Équipe</button>
-      <button class="atab" onclick="tab('tanalytics',this)">📊 Analytics</button>
-      <button class="atab" onclick="tab('tlogs',this)">📋 Logs</button>
-      <button class="atab" onclick="tab('tmaint',this)">🔧 Maintenance</button>
+    <div class="adm-tabs">
+      <button class="adm-tab on" onclick="tab('t-hero',this)">🎯 Hero</button>
+      <button class="adm-tab" onclick="tab('t-teaser',this)">👁️ Teaser</button>
+      <button class="adm-tab" onclick="tab('t-cd',this)">⏳ Compte à rebours</button>
+      <button class="adm-tab" onclick="tab('t-ann',this)">📢 Annonces</button>
+      <button class="adm-tab" onclick="tab('t-villes',this)">🌍 Villes</button>
+      <button class="adm-tab" onclick="tab('t-locked',this)">🔒 Locked</button>
+      <button class="adm-tab" onclick="tab('t-nl',this)">📧 Newsletter</button>
+      <button class="adm-tab" onclick="tab('t-sp',this)">🤝 Sponsors</button>
+      <button class="adm-tab" onclick="tab('t-soc',this)">📱 Réseaux</button>
+      <button class="adm-tab" onclick="tab('t-site',this)">⚙️ Site</button>
+      <button class="adm-tab" onclick="tab('t-accounts',this)">👤 Comptes</button>
     </div>
-
-    <!-- ANNONCES -->
-    <div class="tp on" id="tann">
-      <div class="panel">
-        <div class="pt"><em>📢</em> Publier une annonce</div>
-        <div class="okmsg" id="okann">✅ Annonce publiée !</div>
-        <div class="frow">
-          <div class="fg"><label class="fl2">Titre</label><input class="fc" id="aant" placeholder="Titre de l'annonce"></div>
-          <div class="fg"><label class="fl2">Date de l'annonce</label><input type="date" class="fc" id="aand"></div>
-        </div>
-        <!-- Tags -->
-        <div class="fg">
-          <label class="fl2">Tags (séparés par virgule)</label>
-          <input class="fc" id="atags" placeholder="Ex: artiste, programme, billetterie">
-        </div>
-        <!-- Rich text description -->
-        <div class="fg">
-          <label class="fl2">Description</label>
-          <div class="richtext-toolbar">
-            <button type="button" class="rtb" onclick="rtFormat('bold')"><b>B</b></button>
-            <button type="button" class="rtb" onclick="rtFormat('italic')"><i>I</i></button>
-            <button type="button" class="rtb" onclick="rtFormat('underline')"><u>U</u></button>
-            <button type="button" class="rtb" onclick="rtInsert('\n\n• ')">• Liste</button>
-            <button type="button" class="rtb" onclick="rtInsert('\n\n')">¶</button>
-          </div>
-          <div class="fc richtext-editor" id="aandesc" contenteditable="true" placeholder="Description de l'annonce…" style="min-height:100px;outline:none;"></div>
-        </div>
-        <!-- Image -->
-        <div class="fg"><label class="fl2">Image</label>
-          <div class="upa" onclick="g('aanimg').click()">
-            <input type="file" id="aanimg" accept="image/*" capture="environment" style="display:none" onchange="prevImg(this,'prevann')">
-            <span class="upatxt"><em>📸</em>Choisir une image ou prendre une photo</span>
-            <img id="prevann" class="uprev">
-          </div>
-          <div class="upload-ld" id="ldann">⏳ Upload en cours…</div>
-        </div>
-        <!-- Programmation -->
-        <div class="fg">
-          <label class="fl2">Programmer la publication (optionnel)</label>
-          <input type="datetime-local" class="fc" id="aprog">
-          <div style="font-size:9px;color:var(--gray);margin-top:4px;">Laisser vide pour publier immédiatement</div>
-        </div>
-        <div class="trow">
-          <div><div class="tlbl">🔥 Breaking — Annonce importante</div></div>
-          <label class="tog"><input type="checkbox" id="abrk"><span class="tsl"></span></label>
-        </div>
-        <div class="trow">
-          <div><div class="tlbl">💾 Sauvegarder comme brouillon</div><div class="tdesc">Ne sera pas visible sur le site</div></div>
-          <label class="tog"><input type="checkbox" id="adraft"><span class="tsl"></span></label>
-        </div>
-        <!-- Aperçu -->
-        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
-          <button class="bta ghost" onclick="previewAnn()">👁 Aperçu</button>
-          <button class="bta" onclick="publishAnn()">Publier</button>
-        </div>
-      </div>
-      <!-- Aperçu live -->
-      <div class="panel" id="preview-panel" style="display:none;">
-        <div class="pt"><em>👁</em> Aperçu de l'annonce</div>
-        <div id="preview-content"></div>
-      </div>
-      <!-- Brouillons -->
-      <div class="panel">
-        <div class="pt"><em>💾</em> Brouillons</div>
-        <div class="alist" id="draftslist"><div style="font-size:11px;color:var(--gray);padding:10px;">Aucun brouillon.</div></div>
-      </div>
-      <div class="panel"><div class="pt"><em>📋</em> Annonces publiées</div><div class="alist" id="annlist"></div></div>
-    </div>
-
-    <!-- COUNTDOWN -->
-    <div class="tp" id="tcd"><div class="panel">
-      <div class="pt"><em>⏳</em> Compte à Rebours</div>
-      <div class="okmsg" id="okcd">✅ Date enregistrée !</div>
-      <div class="fg"><label class="fl2">Date & heure de l'événement</label><input type="datetime-local" class="fc" id="acddate"></div>
-      <button class="bta" onclick="saveCD()">Enregistrer</button>
-    </div></div>
 
     <!-- HERO -->
-    <div class="tp" id="thero"><div class="panel">
+    <div class="tp on" id="t-hero"><div class="panel">
       <div class="pt"><em>🎯</em> Section Hero</div>
-      <div class="okmsg" id="okhero">✅ Mis à jour !</div>
+      <div class="ok-msg" id="ok-hero">✅ Mis à jour !</div>
       <div class="frow">
-        <div class="fg"><label class="fl2">Badge</label><input class="fc" id="abadge"></div>
-        <div class="fg"><label class="fl2">Tagline</label><input class="fc" id="atag"></div>
+        <div class="fg"><label class="flbl2">Badge</label><input class="fc" id="a-badge" placeholder="Bénin · Département du Mono · 2025"></div>
+        <div class="fg"><label class="flbl2">Tagline</label><input class="fc" id="a-tag" placeholder="Le Mono cache bien son jeu…"></div>
       </div>
       <div class="frow">
-        <div class="fg"><label class="fl2">Bouton 1</label><input class="fc" id="abtn1"></div>
-        <div class="fg"><label class="fl2">Bouton 2</label><input class="fc" id="abtn2"></div>
+        <div class="fg"><label class="flbl2">Bouton 1</label><input class="fc" id="a-btn1" placeholder="⚡ Rejoindre le mouvement"></div>
+        <div class="fg"><label class="flbl2">Bouton 2</label><input class="fc" id="a-btn2" placeholder="Voir les annonces →"></div>
       </div>
-      <button class="bta" onclick="saveHero()">Sauvegarder</button>
+      <button class="btn-a" onclick="saveHero()">Sauvegarder</button>
     </div></div>
 
     <!-- TEASER -->
-    <div class="tp" id="tteaser"><div class="panel">
+    <div class="tp" id="t-teaser"><div class="panel">
       <div class="pt"><em>👁️</em> Teaser Mystérieux</div>
-      <div class="okmsg" id="okteaser">✅ Mis à jour !</div>
-      <div class="fg"><label class="fl2">Citation</label><textarea class="fc" id="atsq"></textarea></div>
-      <div class="fg"><label class="fl2">Sous-texte</label><input class="fc" id="atss"></div>
-      <button class="bta" onclick="saveTeaser()">Sauvegarder</button>
+      <div class="ok-msg" id="ok-teaser">✅ Mis à jour !</div>
+      <div class="fg"><label class="flbl2">Citation</label><textarea class="fc" id="a-tsq"></textarea></div>
+      <div class="fg"><label class="flbl2">Sous-texte</label><input class="fc" id="a-tss"></div>
+      <button class="btn-a" onclick="saveTeaser()">Sauvegarder</button>
     </div></div>
 
+    <!-- COUNTDOWN -->
+    <div class="tp" id="t-cd"><div class="panel">
+      <div class="pt"><em>⏳</em> Compte à Rebours</div>
+      <div class="ok-msg" id="ok-cd">✅ Date enregistrée !</div>
+      <div class="fg"><label class="flbl2">Date & heure de l'événement</label><input type="datetime-local" class="fc" id="a-cddate"></div>
+      <button class="btn-a" onclick="saveCD()">Enregistrer</button>
+    </div></div>
+
+    <!-- ANNONCES -->
+    <div class="tp" id="t-ann">
+      <div class="panel">
+        <div class="pt"><em>📢</em> Publier une annonce</div>
+        <div class="ok-msg" id="ok-ann">✅ Annonce publiée !</div>
+        <div class="frow">
+          <div class="fg"><label class="flbl2">Titre</label><input class="fc" id="a-ant"></div>
+          <div class="fg"><label class="flbl2">Date</label><input type="date" class="fc" id="a-and"></div>
+        </div>
+        <div class="fg"><label class="flbl2">Description</label><textarea class="fc" id="a-andesc"></textarea></div>
+        <div class="fg"><label class="flbl2">Image</label>
+          <div class="upload-area" onclick="document.getElementById('a-animg').click()">
+            <input type="file" id="a-animg" accept="image/*" style="display:none" onchange="previewImg(this,'prev-ann')">
+            <span class="upload-txt"><em>📸</em>Clique pour choisir une image</span>
+            <img id="prev-ann" class="upload-preview">
+          </div>
+        </div>
+        <button class="btn-a" onclick="publishAnn()">Publier</button>
+      </div>
+      <div class="panel">
+        <div class="pt"><em>📋</em> Annonces publiées</div>
+        <div class="al" id="ann-al"></div>
+      </div>
+    </div>
+
     <!-- VILLES -->
-    <div class="tp" id="tvilles">
+    <div class="tp" id="t-villes">
       <div class="panel">
         <div class="pt"><em>🌍</em> Ajouter une ville</div>
-        <div class="okmsg" id="okville">✅ Ville ajoutée !</div>
+        <div class="ok-msg" id="ok-ville">✅ Ville ajoutée !</div>
         <div class="frow">
-          <div class="fg"><label class="fl2">Nom</label><input class="fc" id="avn" placeholder="Lokossa"></div>
-          <div class="fg"><label class="fl2">Département</label><input class="fc" id="avd" placeholder="Mono · Bénin"></div>
+          <div class="fg"><label class="flbl2">Nom</label><input class="fc" id="a-vn" placeholder="Lokossa"></div>
+          <div class="fg"><label class="flbl2">Département</label><input class="fc" id="a-vd" placeholder="Mono · Bénin"></div>
         </div>
-        <button class="bta" onclick="addVille()">Ajouter</button>
+        <button class="btn-a" onclick="addVille()">Ajouter</button>
       </div>
-      <div class="panel"><div class="pt"><em>📋</em> Villes</div><div class="alist" id="villeslist"></div></div>
+      <div class="panel"><div class="pt"><em>📋</em> Villes</div><div class="al" id="villes-al"></div></div>
     </div>
 
     <!-- LOCKED -->
-    <div class="tp" id="tlocked"><div class="panel">
+    <div class="tp" id="t-locked"><div class="panel">
       <div class="pt"><em>🔒</em> Section Locked</div>
-      <div class="okmsg" id="oklocked">✅ Mis à jour !</div>
+      <div class="ok-msg" id="ok-locked">✅ Mis à jour !</div>
       <div class="trow">
-        <div><div class="tlbl">Afficher la section</div></div>
-        <label class="tog"><input type="checkbox" id="alkactive" checked><span class="tsl"></span></label>
+        <div><div class="tlbl">Afficher</div><div class="tdesc">Masquer du contenu jusqu'à l'événement</div></div>
+        <label class="tog"><input type="checkbox" id="a-lkactive" checked><span class="tslider"></span></label>
       </div>
-      <div style="margin-top:13px;" class="frow">
-        <div class="fg"><label class="fl2">Icône</label><input class="fc" id="alkicon" placeholder="🔒"></div>
-        <div class="fg"><label class="fl2">Titre</label><input class="fc" id="alktitle"></div>
+      <div style="margin-top:16px;" class="frow">
+        <div class="fg"><label class="flbl2">Icône</label><input class="fc" id="a-lkicon" placeholder="🔒"></div>
+        <div class="fg"><label class="flbl2">Titre</label><input class="fc" id="a-lktitle"></div>
       </div>
-      <div class="fg"><label class="fl2">Description</label><textarea class="fc" id="alksub"></textarea></div>
-      <button class="bta" onclick="saveLocked()">Sauvegarder</button>
+      <div class="fg"><label class="flbl2">Description</label><textarea class="fc" id="a-lksub"></textarea></div>
+      <button class="btn-a" onclick="saveLocked()">Sauvegarder</button>
     </div></div>
 
-    <!-- GALERIE -->
-    <div class="tp" id="tgal">
-      <div class="panel">
-        <div class="pt"><em>🖼️</em> Ajouter une photo</div>
-        <div class="okmsg" id="okgal">✅ Photo ajoutée !</div>
-        <div class="fg"><label class="fl2">Photo</label>
-          <div class="upa" onclick="g('agalimg').click()">
-            <input type="file" id="agalimg" accept="image/*" style="display:none" onchange="prevImg(this,'prevgal')">
-            <span class="upatxt"><em>📷</em>Choisir une photo</span>
-            <img id="prevgal" class="uprev">
-          </div>
-          <div class="upload-ld" id="ldgal">⏳ Upload en cours…</div>
-        </div>
-        <div class="fg"><label class="fl2">Légende</label><input class="fc" id="agalcap" placeholder="Description de la photo…"></div>
-        <button class="bta" onclick="addGalerie()">Ajouter</button>
-      </div>
-      <div class="panel"><div class="pt"><em>📋</em> Photos</div><div class="alist" id="gallist"></div></div>
-    </div>
-
     <!-- NEWSLETTER -->
-    <div class="tp" id="tnl">
+    <div class="tp" id="t-nl">
       <div class="panel">
         <div class="pt"><em>📧</em> Newsletter — Contenu</div>
-        <div class="okmsg" id="oknl">✅ Mis à jour !</div>
-        <div class="fg"><label class="fl2">Titre</label><input class="fc" id="anlt"></div>
-        <div class="fg"><label class="fl2">Description</label><textarea class="fc" id="anls"></textarea></div>
-        <div class="fg"><label class="fl2">Texte bouton</label><input class="fc" id="anlb"></div>
-        <button class="bta" onclick="saveNL()">Sauvegarder</button>
+        <div class="ok-msg" id="ok-nl">✅ Mis à jour !</div>
+        <div class="fg"><label class="flbl2">Titre</label><input class="fc" id="a-nlt"></div>
+        <div class="fg"><label class="flbl2">Description</label><textarea class="fc" id="a-nls"></textarea></div>
+        <div class="fg"><label class="flbl2">Texte bouton</label><input class="fc" id="a-nlb"></div>
+        <button class="btn-a" onclick="saveNL()">Sauvegarder</button>
       </div>
       <div class="panel">
-        <div class="pt"><em>📋</em> Abonnés — <span id="nlcnt" style="color:var(--neon);">0</span></div>
-        <div class="alist" id="nllist"></div>
+        <div class="pt"><em>📋</em> Abonnés — <span id="nl-cnt" style="color:var(--neon);">0</span></div>
+        <div class="al" id="nl-al"></div>
       </div>
     </div>
 
     <!-- SPONSORS -->
-    <div class="tp" id="tsp">
+    <div class="tp" id="t-sp">
       <div class="panel">
         <div class="pt"><em>🤝</em> Ajouter un sponsor</div>
-        <div class="okmsg" id="oksp">✅ Ajouté !</div>
+        <div class="ok-msg" id="ok-sp">✅ Ajouté !</div>
         <div class="frow">
-          <div class="fg"><label class="fl2">Nom</label><input class="fc" id="aspn" placeholder="Orange Bénin"></div>
-          <div class="fg"><label class="fl2">Catégorie</label>
-            <select class="fc" id="aspc"><option>Platinum</option><option>Gold</option><option>Silver</option><option>Partenaire</option></select>
+          <div class="fg"><label class="flbl2">Nom</label><input class="fc" id="a-spn" placeholder="Orange Bénin"></div>
+          <div class="fg"><label class="flbl2">Catégorie</label>
+            <select class="fc" id="a-spc"><option>Platinum</option><option>Gold</option><option>Silver</option><option>Partenaire</option></select>
           </div>
         </div>
-        <div class="fg"><label class="fl2">Logo (optionnel)</label>
-          <div class="upa" onclick="g('aspimg').click()">
-            <input type="file" id="aspimg" accept="image/*" style="display:none" onchange="prevImg(this,'prevsp')">
-            <span class="upatxt"><em>🖼️</em>Choisir un logo</span>
-            <img id="prevsp" class="uprev">
+        <div class="fg"><label class="flbl2">Logo (optionnel)</label>
+          <div class="upload-area" onclick="document.getElementById('a-spimg').click()">
+            <input type="file" id="a-spimg" accept="image/*" style="display:none" onchange="previewImg(this,'prev-sp')">
+            <span class="upload-txt"><em>🖼️</em>Choisir un logo</span>
+            <img id="prev-sp" class="upload-preview">
           </div>
-          <div class="upload-ld" id="ldsp">⏳ Upload en cours…</div>
         </div>
-        <button class="bta" onclick="addSp()">Ajouter</button>
+        <button class="btn-a" onclick="addSp()">Ajouter</button>
       </div>
-      <div class="panel"><div class="pt"><em>📋</em> Sponsors</div><div class="alist" id="splist"></div></div>
+      <div class="panel"><div class="pt"><em>📋</em> Sponsors</div><div class="al" id="sp-al"></div></div>
     </div>
 
     <!-- SOCIAUX -->
-    <div class="tp" id="tsoc"><div class="panel">
+    <div class="tp" id="t-soc"><div class="panel">
       <div class="pt"><em>📱</em> Réseaux Sociaux</div>
-      <div class="okmsg" id="oksoc">✅ Liens mis à jour !</div>
+      <div class="ok-msg" id="ok-soc">✅ Liens mis à jour !</div>
       <div class="frow">
-        <div class="fg"><label class="fl2">Lien Facebook</label><input class="fc" id="afbu"></div>
-        <div class="fg"><label class="fl2">Handle Facebook</label><input class="fc" id="afbh"></div>
+        <div class="fg"><label class="flbl2">Lien Facebook</label><input class="fc" id="a-fbu"></div>
+        <div class="fg"><label class="flbl2">Handle Facebook</label><input class="fc" id="a-fbh"></div>
       </div>
       <div class="frow">
-        <div class="fg"><label class="fl2">Lien TikTok</label><input class="fc" id="atku"></div>
-        <div class="fg"><label class="fl2">Handle TikTok</label><input class="fc" id="atkh"></div>
+        <div class="fg"><label class="flbl2">Lien TikTok</label><input class="fc" id="a-tku"></div>
+        <div class="fg"><label class="flbl2">Handle TikTok</label><input class="fc" id="a-tkh"></div>
       </div>
       <div class="frow">
-        <div class="fg"><label class="fl2">Lien WhatsApp</label><input class="fc" id="awau"></div>
-        <div class="fg"><label class="fl2">Handle WhatsApp</label><input class="fc" id="awah"></div>
+        <div class="fg"><label class="flbl2">Lien WhatsApp</label><input class="fc" id="a-wau"></div>
+        <div class="fg"><label class="flbl2">Handle WhatsApp</label><input class="fc" id="a-wah"></div>
       </div>
-      <button class="bta" onclick="saveSoc()">Enregistrer</button>
+      <button class="btn-a" onclick="saveSoc()">Enregistrer</button>
     </div></div>
 
     <!-- SITE -->
-    <div class="tp" id="tsite"><div class="panel">
+    <div class="tp" id="t-site"><div class="panel">
       <div class="pt"><em>⚙️</em> Paramètres généraux</div>
-      <div class="okmsg" id="oksite">✅ Sauvegardé !</div>
+      <div class="ok-msg" id="ok-site">✅ Sauvegardé !</div>
       <div class="frow">
-        <div class="fg"><label class="fl2">Texte footer</label><input class="fc" id="aft"></div>
-        <div class="fg"><label class="fl2">Compteur visiteurs</label><input type="number" class="fc" id="avis"></div>
+        <div class="fg"><label class="flbl2">Texte footer</label><input class="fc" id="a-ft"></div>
+        <div class="fg"><label class="flbl2">Compteur visiteurs</label><input type="number" class="fc" id="a-vis"></div>
       </div>
-
       <div class="trow">
-        <div><div class="tlbl">Easter Egg (tape MONO)</div></div>
-        <label class="tog"><input type="checkbox" id="aee" checked><span class="tsl"></span></label>
+        <div><div class="tlbl">Splash Screen</div><div class="tdesc">Écran d'intro au chargement</div></div>
+        <label class="tog"><input type="checkbox" id="a-splash" checked><span class="tslider"></span></label>
       </div>
-      <button class="bta" style="margin-top:13px;" onclick="saveSite()">Sauvegarder</button>
+      <div class="trow">
+        <div><div class="tlbl">Easter Egg (code MONO)</div><div class="tdesc">Animation secrète au clavier</div></div>
+        <label class="tog"><input type="checkbox" id="a-ee" checked><span class="tslider"></span></label>
+      </div>
+      <button class="btn-a" style="margin-top:16px;" onclick="saveSite()">Sauvegarder</button>
     </div></div>
 
-    <!-- ÉQUIPE -->
-    <div class="tp" id="tteam">
+    <!-- COMPTES -->
+    <div class="tp" id="t-accounts">
       <div class="panel">
-        <div class="pt"><em>👥</em> Inviter un admin</div>
-        <div class="okmsg" id="okinv">✅ Invitation enregistrée ! Dis à cette personne de se connecter avec son email.</div>
-        <p style="font-family:var(--fh);font-size:13px;color:rgba(240,240,240,.3);margin-bottom:14px;line-height:1.6;">tu peux inviter autant d'admins que tu veux.</p>
-        <div class="fg"><label class="fl2">Email à inviter</label><input type="email" class="fc" id="invemail" placeholder="email@exemple.com"></div>
-        <div class="fg"><label class="fl2">Nom (optionnel)</label><input class="fc" id="invname" placeholder="Prénom Nom"></div>
-        <button class="bta" onclick="inviteAdmin()" id="invbtn">Envoyer l'invitation</button>
+        <div class="pt"><em>👤</em> Comptes Admin (3 max)</div>
+        <p style="font-size:12px;color:var(--gray);margin-bottom:20px;line-height:1.7;">Seuls ces 3 comptes peuvent se connecter. Aucune inscription publique.</p>
+        <div class="acc-grid" id="acc-grid"></div>
       </div>
-      <div class="panel">
-        <div class="pt"><em>📋</em> Membres de l'équipe</div>
-        <div class="tgrid" id="tgrid"></div>
-      </div>
-    </div>
-  
-    <!-- FAQ -->
-    <div class="tp" id="tfaq">
-      <div class="panel">
-        <div class="pt"><em>❓</em> Ajouter une question FAQ</div>
-        <div class="okmsg" id="okfaq">✅ Question ajoutée !</div>
-        <div class="fg"><label class="fl2">Question</label><input class="fc" id="afaqq" placeholder="Ex: Comment venir à l'événement ?"></div>
-        <div class="fg"><label class="fl2">Réponse</label><textarea class="fc" id="afaqa" placeholder="La réponse…"></textarea></div>
-        <button class="bta" onclick="addFaq()">Ajouter</button>
-      </div>
-      <div class="panel"><div class="pt"><em>📋</em> Questions</div><div class="alist" id="faqlist"></div></div>
-    </div>
-
-    <!-- ANALYTICS -->
-    <div class="tp" id="tanalytics">
-      <div class="analytics-grid" id="ana-grid">
-        <div class="ana-card"><div class="ana-num" id="ana-vis">0</div><div class="ana-lbl">Visites totales</div></div>
-        <div class="ana-card"><div class="ana-num" id="ana-ann">0</div><div class="ana-lbl">Annonces</div></div>
-        <div class="ana-card"><div class="ana-num" id="ana-nl">0</div><div class="ana-lbl">Abonnés</div></div>
-        <div class="ana-card"><div class="ana-num" id="ana-sp">0</div><div class="ana-lbl">Sponsors</div></div>
-        <div class="ana-card"><div class="ana-num" id="ana-gal">0</div><div class="ana-lbl">Photos</div></div>
-        <div class="ana-card"><div class="ana-num" id="ana-team">0</div><div class="ana-lbl">Admins</div></div>
-      </div>
-      <div class="ana-chart">
-        <div class="ana-chart-title">Croissance abonnés (simulation)</div>
-        <div class="chart-bars" id="chart-bars"></div>
-        <div class="chart-labels" id="chart-labels"></div>
-      </div>
-      <div class="panel">
-        <div class="pt"><em>📧</em> Export Newsletter</div>
-        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">Télécharger la liste des abonnés en CSV.</p>
-        <button class="btn-export" onclick="exportCSV()">⬇ Télécharger CSV</button>
-      </div>
-    </div>
-
-    <!-- LOGS -->
-    <div class="tp" id="tlogs">
-      <div class="panel">
-        <div class="pt"><em>📋</em> Journal d'activité</div>
-        <div id="logs-list"><div style="font-size:12px;color:var(--gray);padding:10px;">Chargement…</div></div>
-      </div>
-    </div>
-
-    <!-- MAINTENANCE -->
-    <div class="tp" id="tmaint">
-      <div class="panel">
-        <div class="pt"><em>🔧</em> Mode Maintenance</div>
-        <p style="font-family:var(--fh);font-size:14px;color:rgba(240,240,240,.35);margin-bottom:16px;line-height:1.6;">Quand activé, les visiteurs voient un écran "Site en maintenance" au lieu du site.</p>
-        <div class="trow">
-          <div><div class="tlbl">Activer le mode maintenance</div><div class="tdesc">Le site sera inaccessible aux visiteurs</div></div>
-          <label class="tog"><input type="checkbox" id="amaint" onchange="toggleMaintenance(this.checked)"><span class="tsl"></span></label>
+      <div class="panel" id="pw-panel">
+        <div class="pt"><em>🔑</em> Changer un mot de passe</div>
+        <div class="ok-msg" id="ok-pw">✅ Mot de passe mis à jour !</div>
+        <div class="frow">
+          <div class="fg"><label class="flbl2">Compte</label><select class="fc" id="pw-sel"></select></div>
+          <div class="fg"><label class="flbl2">Nouveau mot de passe</label><input type="password" class="fc" id="pw-new" placeholder="Min. 4 caractères"></div>
         </div>
-        <div class="fg" style="margin-top:16px;"><label class="fl2">Message de maintenance</label><textarea class="fc" id="amaint-msg" placeholder="Site en maintenance. Revenez bientôt…"></textarea></div>
-        <button class="bta" onclick="saveMaint()">Sauvegarder</button>
-        <div class="okmsg" id="okmaint">✅ Mode maintenance mis à jour !</div>
-      </div>
-      <div class="panel">
-        <div class="pt"><em>💾</em> Backup des données</div>
-        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">Télécharger une sauvegarde complète de toutes les données.</p>
-        <button class="btn-export" onclick="backupData()">⬇ Télécharger backup JSON</button>
+        <button class="btn-a" onclick="changePW()">Changer</button>
       </div>
     </div>
 
-  </div>
-</div>
-
-<!-- MAINTENANCE OVERLAY -->
-<div class="maintenance-overlay" id="maint-overlay">
-  <div style="font-size:48px;">🔧</div>
-  <div class="maint-title">MONO<em>.</em>SUMMER</div>
-  <div class="maint-sub" id="maint-msg-display">Site en maintenance. Revenez bientôt…</div>
-</div>
-
-<!-- BOTTOM NAV MOBILE -->
-<div id="bottom-nav">
-  <div class="bnav-items">
-    <a href="#" class="bnav-item active" onclick="bnav(this,'#')"><span class="bnav-icon">🏠</span><span class="bnav-lbl">Accueil</span></a>
-    <a href="#annonces" class="bnav-item" onclick="bnav(this,'#annonces')"><span class="bnav-icon">📢</span><span class="bnav-lbl">Annonces</span></a>
-    <a href="#galerie" class="bnav-item" onclick="bnav(this,'#galerie')"><span class="bnav-icon">📸</span><span class="bnav-lbl">Galerie</span></a>
-    <a href="#socials" class="bnav-item" onclick="bnav(this,'#socials')"><span class="bnav-icon">🌍</span><span class="bnav-lbl">Réseaux</span></a>
-    <button class="bnav-item" onclick="openAuth();return false;"><span class="bnav-icon">👤</span><span class="bnav-lbl">Connexion</span></button>
   </div>
 </div>
 
 <script>
-// ══ SUPABASE ══════════════════════════════════════
-const SB_URL='https://chhcgenvfdirmesgsstb.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoaGNnZW52ZmRpcm1lc2dzc3RiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMTUxNTQsImV4cCI6MjA5NTY5MTE1NH0.xrX65ce0SLoIbWJZGk7m-7TA57rdDJLBkDlzWwu6S0U';
-const sb=supabase.createClient(SB_URL,SB_KEY);
+// ═══ SUPABASE ═══════════════════════════════════════
+const SB_URL = 'https://chhcgenvfdirmesgsstb.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoaGNnZW52ZmRpcm1lc2dzc3RiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxMTUxNTQsImV4cCI6MjA5NTY5MTE1NH0.xrX65ce0SLoIbWJZGk7m-7TA57rdDJLBkDlzWwu6S0U';
+const { createClient } = supabase;
+const sb = createClient(SB_URL, SB_KEY);
 
-// ══ HELPERS ═══════════════════════════════════════
-const g=id=>document.getElementById(id);
-const v=id=>(g(id)?.value||'').trim();
-const sv=(id,val)=>{const el=g(id);if(el)el.value=val||'';};
-const pad=n=>String(n).padStart(2,'0');
-const fmtD=d=>{if(!d)return '';try{return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});}catch{return d;}};
-function flash(id){const el=g(id);if(!el)return;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3500);}
-function tab(id,btn){document.querySelectorAll('.tp').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.atab').forEach(b=>b.classList.remove('on'));g(id).classList.add('on');btn.classList.add('on');}
+// ═══ HELPERS ════════════════════════════════════════
+function g(id){return document.getElementById(id);}
+function v(id){return(g(id)?.value||'').trim();}
+function sv(id,val){const el=g(id);if(el)el.value=val||'';}
+function flash(id){const el=g(id);if(!el)return;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
+function tab(id,btn){document.querySelectorAll('.tp').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.adm-tab').forEach(b=>b.classList.remove('on'));g(id).classList.add('on');btn.classList.add('on');}
+function pad(n){return String(n).padStart(2,'0');}
+function fmtD(d){if(!d)return '';try{return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});}catch{return d;}}
 
-// ══ CURSOR ════════════════════════════════════════
-// Curseur custom uniquement sur desktop
+// ═══ CURSOR ═════════════════════════════════════════
+const cur=g('cur'),curR=g('cur-r');
 if(window.matchMedia('(pointer:fine)').matches){
-  const c=g('cur'),cr=g('cur-r');
-  if(c)c.style.display='block';
-  if(cr)cr.style.display='block';
-  document.body.style.cursor='none';
   let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove',e=>{
-    mx=e.clientX;my=e.clientY;
-    if(c){c.style.left=mx+'px';c.style.top=my+'px';}
-  });
-  (function a(){
-    rx+=(mx-rx)*.12;ry+=(my-ry)*.12;
-    if(cr){cr.style.left=rx+'px';cr.style.top=ry+'px';}
-    requestAnimationFrame(a);
-  })();
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+  (function a(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(a);})();
+  document.addEventListener('mouseover',e=>{document.body.classList.toggle('ch',!!e.target.closest('a,button,input,select,textarea,.ville-item,.ann-card,.soc-btn,.upload-area'));});
 }
 
-// ══ HERO CANVAS PARTICLES ════════════════════════
-(()=>{
-  const cv=g('hcv');if(!cv)return;
-  const ctx=cv.getContext('2d');let W,H,pts=[];
-  const rsz=()=>{W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight;};
-  const mk=()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.3,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,o:Math.random()*.45+.08});
-  rsz();pts=Array.from({length:75},mk);window.addEventListener('resize',rsz);
-  (function draw(){
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='rgba(0,255,136,.022)';ctx.lineWidth=1;
-    for(let x=0;x<W;x+=55){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-    for(let y=0;y<H;y+=55){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-    pts.forEach(p=>{
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(0,255,136,${p.o})`;ctx.fill();
-      p.x+=p.vx;p.y+=p.vy;
-      if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
-    });
-    requestAnimationFrame(draw);
-  })();
-})();
-
-// ══ SCROLL ════════════════════════════════════════
+// ═══ SCROLL ═════════════════════════════════════════
 window.addEventListener('scroll',()=>{
   const p=(scrollY/(document.documentElement.scrollHeight-innerHeight))*100;
   g('prog').style.width=p+'%';
   g('nav').classList.toggle('scrolled',scrollY>50);
+  const gr=document.querySelector('.grid-bg');if(gr)gr.style.transform=`translateY(${scrollY*.22}px)`;
 },{passive:true});
 
-// ══ REVEAL ════════════════════════════════════════
+// ═══ REVEAL ═════════════════════════════════════════
 const ro=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.1});
-const watchReveal=()=>document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+function watchReveal(){document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));}
 
-// ══ MOBILE MENU ═══════════════════════════════════
-const toggleMenu=()=>{const h=g('hbg'),m=g('mmenu');h.classList.toggle('open');m.classList.toggle('open');document.body.style.overflow=m.classList.contains('open')?'hidden':'';};
-const closeMenu=()=>{g('hbg').classList.remove('open');g('mmenu').classList.remove('open');document.body.style.overflow='';};
-
-// ══ CONFIG ════════════════════════════════════════
-let CFG={
-  hero_badge:'Bénin · Département du Mono · 2025',
-  hero_tagline:'Le Mono cache bien son jeu…',
-  hero_btn1:'⚡ Rejoindre le mouvement',
-  hero_btn2:'Voir les annonces →',
-  teaser_quote:'Le Mono cache bien son jeu…',
-  teaser_sub:"Un événement 4× plus grand que d'habitude. Ne reste pas dans l'ombre.",
-  locked_active:'true',
-  locked_icon:'🔒',
-  locked_title:'CONTENU BIENTÔT RÉVÉLÉ',
-  locked_sub:'Certaines informations sont encore gardées secrètes.',
-  nl_title:'SOIS LE PREMIER À SAVOIR',
-  nl_sub:"Abonne-toi pour ne rien manquer. Le Mono Summer arrive.",
-  nl_btn:"S'abonner",
-  fb_url:'https://www.facebook.com/share/1br1FJ18Mx/?mibextid=wwXIfr',
-  fb_handle:'@MonoSummer',
-  tk_url:'https://www.tiktok.com/@mono.summer?_r=1&_t=ZS-94UHQQE2zZJ',
-  tk_handle:'@mono.summer',
-  wa_url:'https://whatsapp.com/channel/0029VbCE7mZ0bIdnaAT6Bf2k',
-  wa_handle:'Canal Officiel',
-  footer_copy:'© 2025 MONO SUMMER — Bénin 🇧🇯',
-  visitors:'2847',
-  easter_active:'true',
-  maintenance:'false'
-},eventDate=new Date(Date.now()+70*864e5).toISOString(),currentUser=null,currentProfile=null,eeActive=true;
-
-async function loadConfig(){
-  try{
-    const{data}=await sb.from('config').select('*');
-    if(data)data.forEach(r=>{CFG[r.key]=r.value;});
-  }catch(e){console.warn('Config load failed, using defaults');}
-  applyConfig();
-  if(CFG.maintenance==='true'&&!currentUser){
-    const msg=CFG.maintenance_msg||'Site en maintenance. Revenez bientôt…';
-    if(g('maint-msg-display'))g('maint-msg-display').textContent=msg;
-    if(g('maint-overlay'))g('maint-overlay').classList.add('show');
-  }
+// ═══ MOBILE MENU ════════════════════════════════════
+function toggleMenu(){
+  const h=g('hamburger'),m=g('mobile-menu');
+  h.classList.toggle('open');m.classList.toggle('open');
+  document.body.style.overflow=m.classList.contains('open')?'hidden':'';
 }
+
+// ═══ CONFIG / STATE ══════════════════════════════════
+let CFG={};
+let eventDate=new Date(Date.now()+70*864e5).toISOString();
+let currentUser=null;
+let eeActive=true;
+
+// ═══ LOAD CONFIG ════════════════════════════════════
+async function loadConfig(){
+  const {data}=await sb.from('config').select('*');
+  if(data)data.forEach(r=>{CFG[r.key]=r.value;});
+  applyConfig();
+}
+
 async function setConfig(key,value){
   await sb.from('config').upsert({key,value},{onConflict:'key'});
   CFG[key]=value;
 }
+
 function applyConfig(){
-  const c=CFG;
-  if(c.hero_badge)g('hbadge').textContent=c.hero_badge;
-  if(c.hero_tagline)g('htag').textContent=c.hero_tagline;
-  if(c.hero_btn1)g('hbtn1').textContent=c.hero_btn1;
-  if(c.hero_btn2)g('hbtn2').textContent=c.hero_btn2;
-  if(c.teaser_quote)g('tsq').innerHTML=`<em>${c.teaser_quote}</em>`;
-  if(c.teaser_sub)g('tss').textContent=c.teaser_sub;
-  g('locked-sec').style.display=c.locked_active==='false'?'none':'block';
-  if(c.locked_icon)g('lkicon').textContent=c.locked_icon;
-  if(c.locked_title)g('lktitle').textContent=c.locked_title;
-  if(c.locked_sub)g('lksub').innerHTML=c.locked_sub.replace(/\n/g,'<br>');
-  if(c.nl_title)g('nltitle').innerHTML=c.nl_title.replace(/\n/g,'<br>');
-  if(c.nl_sub)g('nlsub').textContent=c.nl_sub;
-  if(c.nl_btn)g('nlbtn').textContent=c.nl_btn;
-  const links=[['sfb','ftfb','fbh',c.fb_url,c.fb_handle],['stk','fttk','tkh',c.tk_url,c.tk_handle],['swa','ftwa','wah',c.wa_url,c.wa_handle]];
-  links.forEach(([s,f,h,u,hd])=>{if(u){g(s).href=u;g(f).href=u;}if(hd)g(h).textContent=hd;});
-  if(c.footer_copy)g('ftcopy').textContent=c.footer_copy;
-  if(c.event_date)eventDate=c.event_date;
-  eeActive=c.easter_active!=='false';
-  const vis=parseInt(c.visitors)||2847;
-  [g('vcnt'),g('vcnt2')].forEach(el=>{if(el)el.textContent=vis.toLocaleString();});
-  g('stvis').textContent=vis;
+  if(CFG.hero_badge)g('h-badge').textContent=CFG.hero_badge;
+  if(CFG.hero_tagline)g('h-tag').textContent=CFG.hero_tagline;
+  if(CFG.hero_btn1)g('h-btn1').textContent=CFG.hero_btn1;
+  if(CFG.hero_btn2)g('h-btn2').textContent=CFG.hero_btn2;
+  if(CFG.teaser_quote)g('ts-q').innerHTML=`<em>${CFG.teaser_quote}</em>`;
+  if(CFG.teaser_sub)g('ts-s').textContent=CFG.teaser_sub;
+  g('locked-sec').style.display=CFG.locked_active==='false'?'none':'block';
+  if(CFG.locked_icon)g('lk-icon').textContent=CFG.locked_icon;
+  if(CFG.locked_title)g('lk-title').textContent=CFG.locked_title;
+  if(CFG.locked_sub)g('lk-sub').innerHTML=CFG.locked_sub.replace(/\n/g,'<br>');
+  if(CFG.nl_title)g('nl-title').innerHTML=CFG.nl_title.replace(/\n/g,'<br>');
+  if(CFG.nl_sub)g('nl-sub').textContent=CFG.nl_sub;
+  if(CFG.nl_btn)g('nl-btn').textContent=CFG.nl_btn;
+  if(CFG.fb_url)g('soc-fb').href=CFG.fb_url;
+  if(CFG.fb_handle)g('fb-h').textContent=CFG.fb_handle;
+  if(CFG.tk_url)g('soc-tk').href=CFG.tk_url;
+  if(CFG.tk_handle)g('tk-h').textContent=CFG.tk_handle;
+  if(CFG.wa_url)g('soc-wa').href=CFG.wa_url;
+  if(CFG.wa_handle)g('wa-h').textContent=CFG.wa_handle;
+  if(CFG.footer_copy)g('ft-copy').textContent=CFG.footer_copy;
+  if(CFG.event_date){eventDate=CFG.event_date;}
+  eeActive=CFG.easter_active!=='false';
+  const vis=parseInt(CFG.visitors)||2847;
+  g('vis-cnt').textContent=vis.toLocaleString();
+  if(g('vis-cnt2'))g('vis-cnt2').textContent=vis.toLocaleString();
+  g('st-vis').textContent=vis;
 }
 
-// ══ COUNTDOWN ═════════════════════════════════════
+// ═══ COUNTDOWN ══════════════════════════════════════
 function updateCD(){
   const diff=new Date(eventDate)-Date.now();
-  if(diff<0){['cdd','cdh','cdm','cds'].forEach(i=>g(i).textContent='00');return;}
+  if(diff<0){['cd-d','cd-h','cd-m','cd-s'].forEach(i=>g(i).textContent='00');return;}
   const d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4),s=Math.floor(diff%6e4/1e3);
-  g('cdd').textContent=pad(d);g('cdh').textContent=pad(h);g('cdm').textContent=pad(m);g('cds').textContent=pad(s);
-  g('lktimer').textContent=`${pad(d)}j ${pad(h)}h ${pad(m)}m`;
+  g('cd-d').textContent=pad(d);g('cd-h').textContent=pad(h);g('cd-m').textContent=pad(m);g('cd-s').textContent=pad(s);
+  g('lk-timer').textContent=`${pad(d)}j ${pad(h)}h ${pad(m)}m`;
 }
 
-// ══ RENDERS ═══════════════════════════════════════
-// ══ SLUG + ANN HELPERS ══════════════════
-function toSlug(str){
-  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-');
-}
-function copyAnnLink(slug,btn){
-  const url=window.location.origin+window.location.pathname+'#ann-'+slug;
-  navigator.clipboard.writeText(url).then(()=>{
-    btn.classList.add('copied');btn.textContent='✓ Copié !';
-    setTimeout(()=>{btn.classList.remove('copied');btn.textContent='🔗 Lien';},2000);
-  });
-}
-function checkAnnHash(){
-  const hash=window.location.hash;
-  if(!hash||!hash.startsWith('#ann-'))return;
-  const slug=hash.replace('#ann-','');
-  setTimeout(()=>{
-    const el=g('ann-'+slug);if(!el)return;
-    el.scrollIntoView({behavior:'smooth',block:'center'});
-    el.classList.add('highlighted');
-    setTimeout(()=>el.classList.remove('highlighted'),6000);
-  },800);
-}
-window.addEventListener('hashchange',checkAnnHash);
-let showAllAnn=false;
-function toggleAllAnn(){showAllAnn=!showAllAnn;renderAnn();}
-
+// ═══ RENDER ANNONCES ════════════════════════════════
 async function renderAnn(){
-  const gr=g('agrid');
-  let data;
-  try{
-    const res=await sb.from('annonces').select('*').order('created_at',{ascending:false});
-    data=res.data;
-  }catch(e){ console.warn('renderAnn error:',e); data=null; }
-  if(!data||!data.length){
-    gr.innerHTML='<div class="aempty"><span class="aempty-icon">📢</span><div class="aempty-txt">aucune annonce pour le moment…</div><div class="aempty-sub">revenez bientôt 👁️</div></div>';
-    if(g('stann'))g('stann').textContent=0;
-    const sw=g('ann-see-all-wrap');if(sw)sw.style.display='none';
-    return;
-  }
-  const display=showAllAnn?data:data.slice(0,5);
-  const hasMore=data.length>5;
-  gr.innerHTML=display.map(a=>{
-    const slug=toSlug(a.title);
-    const wasvg='<svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
-    const fbsvg='<svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>';
-    return '<div class="acard'+(a.is_breaking?' breaking':'')+'" id="ann-'+slug+'">'+
-      '<div class="aimg-wrap">'+
-      (a.image_url?'<img src="'+a.image_url+'" class="aimg" loading="lazy">':'<div class="aph skeleton" style="height:200px;width:100%;"></div>')+
-      '<div class="watermark">MONO SUMMER</div></div>'+
-      '<div class="abody">'+
-      '<div class="adate">'+fmtD(a.date)+'</div>'+
-      '<div class="atitle">'+a.title+'</div>'+
-      '<div class="adesc">'+(a.description||'').replace(/\n/g,'<br>')+'</div>'+
-      '<div class="ashare">'+
-      '<button class="sbtn" onclick="shareWA(\''+encodeURIComponent(a.title)+'\')">'+wasvg+' WhatsApp</button>'+
-      '<button class="sbtn" onclick="shareFB()">'+fbsvg+' Facebook</button>'+
-      '<button class="sbtn" id="copy-'+slug+'" onclick="copyAnnLink(\''+slug+'\',this)">🔗 Lien</button>'+
-      '</div></div></div>';
-  }).join('');
-
-  const sw=g('ann-see-all-wrap');
-  if(sw){
-    sw.style.display=hasMore?'block':'none';
-    sw.innerHTML='<button class="btn-see-all" onclick="toggleAllAnn()">'+(showAllAnn?'Voir moins ↑':'Voir toutes les annonces ('+data.length+') →')+'</button>';
-  }
-  g('stann').textContent=data.length;
-  if(data.some(a=>a.is_breaking))document.title='🔥 MONO SUMMER — Nouvelle annonce !';
-  checkAnnHash();
-  if(g('annlist'))g('annlist').innerHTML=data.map(a=>
-    '<div class="ali"><div><div class="alit">'+(a.is_breaking?'🔥 ':'')+a.title+'</div><div class="alim">'+fmtD(a.date)+'</div></div>'+
-    '<div class="alia"><button class="bta sm danger" onclick="confirmDel(()=>delAnn('+a.id+'))">Supprimer</button></div></div>'
-  ).join('');
-}
-
-async function renderVilles(){
-  let data;
-  try{
-    const res=await sb.from('villes').select('*').order('position');
-    data=res.data;
-  }catch(e){ data=null; }
-  if(!data||!data.length){
-    // Villes par défaut si Supabase échoue
-    data=[
-      {id:1,name:'Comé',dept:'Mono · Bénin'},{id:2,name:'Grand-Popo',dept:'Mono · Bénin'},
-      {id:3,name:'Lokossa',dept:'Mono · Bénin'},{id:4,name:'Dogbo',dept:'Mono · Bénin'},
-      {id:5,name:'Athiémé',dept:'Mono · Bénin'},{id:6,name:'Azovè',dept:'Mono · Bénin'}
-    ];
-  }
-  g('vgrid').innerHTML=data.map((v,i)=>`<div class="vitem reveal"><span class="vn">0${i+1}</span><div class="vname">${v.name}</div><div class="vsub">${v.dept}</div></div>`).join('');
-  g('vgrid').querySelectorAll('.reveal').forEach(el=>ro.observe(el));
-  if(g('villeslist'))g('villeslist').innerHTML=data.map(v=>`<div class="ali"><div><div class="alit">${v.name}</div><div class="alim">${v.dept}</div></div><div class="alia"><button class="bta sm danger" onclick="confirmDel(()=>delVille(${v.id}))">Retirer</button></div></div>`).join('');
-}
-
-async function renderSp(){
-  const{data}=await sb.from('sponsors').select('*').order('created_at');
-  if(!data)return;
-  const items=data.map(s=>`<div class="spcard">${s.name}<span style="font-size:8px;opacity:.35;">${s.categorie}</span></div>`).join('');
-  g('mqtrack').innerHTML=items+items;
-  g('stsp').textContent=data.length;
-  if(g('splist'))g('splist').innerHTML=data.map(s=>`<div class="ali"><div><div class="alit">${s.name}</div><div class="alim">${s.categorie}</div></div><div class="alia"><button class="bta sm danger" onclick="confirmDel(()=>delSp(${s.id}))">Supprimer</button></div></div>`).join('');
-}
-
-async function renderNL(){
-  const{data,count}=await sb.from('newsletter').select('*',{count:'exact'}).order('created_at',{ascending:false});
-  const cnt=count||0;g('stnl').textContent=cnt;if(g('nlcnt'))g('nlcnt').textContent=cnt;
-  if(g('nllist'))g('nllist').innerHTML=data&&data.length?data.map(e=>`<div class="ali"><div><div class="alit">${e.email}</div><div class="alim">${fmtD(e.created_at?.split('T')[0])}</div></div><div class="alia"><button class="bta sm danger" onclick="confirmDel(()=>delNL(${e.id}))">Retirer</button></div></div>`).join(''):'<div style="font-size:11px;color:var(--gray);padding:11px;">Aucun abonné encore.</div>';
-}
-
-async function renderGalerie(){
-  const{data}=await sb.from('galerie').select('*').order('created_at',{ascending:false});
-  const gr=g('ggrid');
-  if(!data||!data.length){gr.innerHTML='<div class="gempty">la galerie sera bientôt disponible… 📸</div>';return;}
-  gr.innerHTML=data.map(p=>`<div class="gitem reveal"><img src="${p.image_url}" alt="${p.caption||''}">${p.caption?`<div class="gcap">${p.caption}</div>`:''}</div>`).join('');
+  const{data}=await sb.from('annonces').select('*').order('created_at',{ascending:false});
+  const gr=g('ann-grid');
+  if(!data||!data.length){gr.innerHTML='<div class="ann-empty">Aucune annonce pour le moment… Revenez bientôt.</div>';return;}
+  gr.innerHTML=data.map(a=>`
+    <div class="ann-card reveal">
+      ${a.image_url?`<img src="${a.image_url}" class="ann-img" onerror="this.style.display='none'">`:'<div class="ann-ph">📢</div>'}
+      <div class="ann-body">
+        <div class="ann-date">${fmtD(a.date)}</div>
+        <div class="ann-title">${a.title}</div>
+        <div class="ann-desc">${a.description||''}</div>
+      </div>
+    </div>`).join('');
   gr.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
-  if(g('gallist'))g('gallist').innerHTML=data.map(p=>`<div class="ali"><div><div class="alit">${p.caption||'Photo'}</div></div><div class="alia"><button class="bta sm danger" onclick="confirmDel(()=>delGal(${p.id}))">Supprimer</button></div></div>`).join('');
-}
-
-async function renderTeam(){
-  const{data}=await sb.from('auth_admins').select('*').order('created_at');
-  if(!data||!g('tgrid'))return;
-  g('tgrid').innerHTML=data.map(p=>`
-    <div class="tcard">
-      <div class="tav">${(p.name||p.email||'A')[0].toUpperCase()}</div>
-      <div class="tnm">${p.name||'—'}</div>
-      <div class="tem">${p.email||''}</div>
-      <div class="trl">${p.is_super_admin?'Super Admin':p.role||'Admin'}</div>
-      ${!p.is_super_admin?`<button class="bta sm danger" style="margin-top:8px;" onclick="confirmDel(()=>delAdmin(${p.id}))">Retirer</button>`:''}
-      <div class="tst"><span class="tdot"></span> Actif</div>
+  g('st-ann').textContent=data.length;
+  if(g('ann-al'))g('ann-al').innerHTML=data.map(a=>`
+    <div class="ali">
+      <div><div class="ali-t">${a.title}</div><div class="ali-m">${fmtD(a.date)}</div></div>
+      <div class="ali-act"><button class="btn-a sm danger" onclick="delAnn(${a.id})">Supprimer</button></div>
     </div>`).join('');
 }
 
-async function delAdmin(id){await sb.from('auth_admins').delete().eq('id',id);await renderTeam();}
-
-// ══ UPLOAD ════════════════════════════════════════
-function prevImg(input,pid){
-  const file=input.files[0];if(!file)return;
-  // Vérification type
-  if(!file.type.startsWith('image/')){alert('❌ Fichier invalide. Choisir une image.');input.value='';return;}
-  // Avertissement si > 2MB
-  if(file.size>2*1024*1024){
-    const mb=(file.size/1024/1024).toFixed(1);
-    const wrap=input.closest('.upa');
-    if(wrap){const warn=document.createElement('div');warn.style.cssText='color:#ff8c00;font-size:10px;margin-top:6px;';warn.textContent='⚠️ '+mb+'MB — sera compressé automatiquement';wrap.appendChild(warn);}
-  }
-  const prev=g(pid);const r=new FileReader();
-  r.onload=e=>{prev.src=e.target.result;prev.style.display='block';};r.readAsDataURL(file);
+// ═══ RENDER VILLES ══════════════════════════════════
+async function renderVilles(){
+  const{data}=await sb.from('villes').select('*').order('position');
+  if(!data)return;
+  g('villes-grid').innerHTML=data.map((v,i)=>`
+    <div class="ville-item reveal">
+      <span class="v-n">0${i+1}</span>
+      <div class="v-name">${v.name}</div>
+      <div class="v-sub">${v.dept}</div>
+    </div>`).join('');
+  g('villes-grid').querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+  if(g('villes-al'))g('villes-al').innerHTML=data.map(v=>`
+    <div class="ali">
+      <div><div class="ali-t">${v.name}</div><div class="ali-m">${v.dept}</div></div>
+      <div class="ali-act"><button class="btn-a sm danger" onclick="delVille(${v.id})">Retirer</button></div>
+    </div>`).join('');
 }
 
-async function uploadImg(file,folder,lid){
+// ═══ RENDER SPONSORS ════════════════════════════════
+async function renderSp(){
+  const{data}=await sb.from('sponsors').select('*').order('created_at');
+  if(!data)return;
+  const items=data.map(s=>`<div class="sp-card">${s.name}<span class="sp-cat">${s.categorie}</span></div>`).join('');
+  g('mq-track').innerHTML=items+items;
+  g('st-sp').textContent=data.length;
+  if(g('sp-al'))g('sp-al').innerHTML=data.map(s=>`
+    <div class="ali">
+      <div><div class="ali-t">${s.name}</div><div class="ali-m">${s.categorie}</div></div>
+      <div class="ali-act"><button class="btn-a sm danger" onclick="delSp(${s.id})">Supprimer</button></div>
+    </div>`).join('');
+}
+
+// ═══ RENDER NEWSLETTER ══════════════════════════════
+async function renderNL(){
+  const{data,count}=await sb.from('newsletter').select('*',{count:'exact'}).order('created_at',{ascending:false});
+  const cnt=count||0;
+  g('st-nl').textContent=cnt;
+  if(g('nl-cnt'))g('nl-cnt').textContent=cnt;
+  if(g('nl-al'))g('nl-al').innerHTML=data&&data.length?data.map((e,i)=>`
+    <div class="ali">
+      <div><div class="ali-t">${e.email}</div><div class="ali-m">${fmtD(e.created_at?.split('T')[0])}</div></div>
+      <div class="ali-act"><button class="btn-a sm danger" onclick="delNL(${e.id})">Retirer</button></div>
+    </div>`).join(''):'<div style="color:var(--gray);font-size:12px;padding:14px;">Aucun abonné encore.</div>';
+}
+
+// ═══ RENDER ADMINS ══════════════════════════════════
+async function renderAccounts(){
+  const{data}=await sb.from('admins').select('*');
+  if(!data)return;
+  const isSA=currentUser&&data[0]&&currentUser.username===data[0].username;
+  g('acc-grid').innerHTML=data.map(a=>`
+    <div class="acc-card">
+      <div class="acc-av">${a.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div>
+      <div class="acc-nm">${a.name}</div>
+      <div class="acc-rl">${a.role}</div>
+      ${isSA?`<div class="acc-pw">Pass: ${a.password_plain}</div>`:''}
+      <div class="acc-st"><span class="acc-dot"></span> Actif</div>
+    </div>`).join('');
+  if(g('pw-sel'))g('pw-sel').innerHTML=data.map(a=>`<option value="${a.id}">${a.name} (${a.username})</option>`).join('');
+  if(g('pw-panel'))g('pw-panel').style.display=isSA?'block':'none';
+}
+
+// ═══ UPLOAD IMAGE ════════════════════════════════════
+function previewImg(input,previewId){
+  const file=input.files[0];
+  if(!file)return;
+  const prev=g(previewId);
+  const reader=new FileReader();
+  reader.onload=e=>{prev.src=e.target.result;prev.style.display='block';};
+  reader.readAsDataURL(file);
+}
+
+async function uploadImage(file,folder){
   if(!file)return null;
-  if(lid){const el=g(lid);if(el){el.classList.add('show');el.textContent='⏳ Upload en cours…';}}
-  const ext='jpg'; // Toujours en JPG après compression
-  const fname=folder+'/'+Date.now()+'.'+ext;
-  const{error}=await sb.storage.from('mono-summer').upload(fname,file,{upsert:true,contentType:'image/jpeg'});
-  if(lid){const el=g(lid);if(el)el.classList.remove('show');}
-  if(error){console.error(error);alert('Erreur upload: '+error.message);return null;}
-  return sb.storage.from('mono-summer').getPublicUrl(fname).data.publicUrl;
+  const ext=file.name.split('.').pop();
+  const fname=`${folder}/${Date.now()}.${ext}`;
+  const{data,error}=await sb.storage.from('mono-summer').upload(fname,file,{upsert:true});
+  if(error){console.error(error);return null;}
+  const{data:urlData}=sb.storage.from('mono-summer').getPublicUrl(fname);
+  return urlData.publicUrl;
 }
 
-// ══ AUTH ══════════════════════════════════════════
-let loginAttempts=0,blocked=false,blkInt=null;
-
-function openAuth(){
-  const modal=g('auth-modal');
-  if(modal){modal.classList.add('show');document.body.style.overflow='hidden';}
-}
-function closeAuth(){
-  const modal=g('auth-modal');
-  if(modal){modal.classList.remove('show');document.body.style.overflow='';}
-}
+// ═══ AUTH ════════════════════════════════════════════
+function openAuth(){g('auth-modal').classList.add('show');}
+function closeAuth(){g('auth-modal').classList.remove('show');}
 function authTab(id,btn){
-  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.mpane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.modal-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.modal-pane').forEach(p=>p.classList.remove('on'));
   g('pane-'+id).classList.add('on');btn.classList.add('on');
 }
 
 async function doLogin(){
-  if(blocked)return;
-  const email=v('lemail'),pass=v('lpass');
-  if(!email||!pass)return;
-  const btn=g('lbtn');btn.disabled=true;btn.textContent='Connexion…';
-
-  // Vérification via la table auth_admins
-  const{data,error}=await sb.from('auth_admins')
-    .select('*')
-    .eq('email',email)
-    .single();
-
-  btn.disabled=false;btn.textContent='Se connecter';
-
-  // Comparer le mot de passe côté JS
-  if(error||!data||data.password_plain!==pass){
-    loginAttempts++;
-    if(loginAttempts>=3){
-      blocked=true;g('lerr').classList.remove('show');g('lblk').classList.add('show');
-      let sec=30;g('blktimer').textContent=sec;
-      blkInt=setInterval(()=>{sec--;g('blktimer').textContent=sec;if(sec<=0){clearInterval(blkInt);blocked=false;loginAttempts=0;g('lblk').classList.remove('show');}},1000);
-    } else {
-      const e=g('lerr');e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);
-    }
-    sv('lpass','');return;
+  const u=v('l-user'),p=v('l-pass');
+  const{data,error}=await sb.from('admins').select('*').eq('username',u).eq('password_plain',p).single();
+  if(error||!data){
+    const err=g('login-err');err.classList.add('show');setTimeout(()=>err.classList.remove('show'),3000);
+    sv('l-pass','');return;
   }
-
-  // Connexion réussie
-  currentUser={id:data.id,email:data.email};
-  currentProfile={name:data.name,role:data.role,is_super_admin:data.is_super_admin,email:data.email};
-  loginAttempts=0;closeAuth();openAdmin();
+  currentUser=data;closeAuth();openAdmin();
 }
 
-function doLogout(){currentUser=null;currentProfile=null;g('admin').classList.remove('show');document.body.style.overflow='';}
+function doLogout(){currentUser=null;g('admin').classList.remove('show');document.body.style.overflow='';}
 
 async function openAdmin(){
   if(!currentUser){openAuth();return;}
-  g('auname').textContent=currentProfile?.name||currentUser.email;
-  g('aurole').textContent=currentProfile?.is_super_admin?'Super Admin':currentProfile?.role||'Admin';
-  const c=CFG;
-  sv('abadge',c.hero_badge);sv('atag',c.hero_tagline);sv('abtn1',c.hero_btn1);sv('abtn2',c.hero_btn2);
-  sv('atsq',c.teaser_quote);sv('atss',c.teaser_sub);
-  g('acddate').value=eventDate?eventDate.substring(0,16):'';
-  g('alkactive').checked=c.locked_active!=='false';sv('alkicon',c.locked_icon);sv('alktitle',c.locked_title);sv('alksub',c.locked_sub);
-  sv('anlt',c.nl_title);sv('anls',c.nl_sub);sv('anlb',c.nl_btn);
-  sv('afbu',c.fb_url);sv('afbh',c.fb_handle);sv('atku',c.tk_url);sv('atkh',c.tk_handle);sv('awau',c.wa_url);sv('awah',c.wa_handle);
-  sv('aft',c.footer_copy);g('avis').value=c.visitors||'2847';
-  g('asplash').checked=c.splash_active!=='false';g('aee').checked=c.easter_active!=='false';
-  const isSA=currentProfile?.is_super_admin;
-  if(g('tteam-tab'))g('tteam-tab').style.display=isSA?'flex':'none';
-  await Promise.all([renderAnn(),renderVilles(),renderSp(),renderNL(),renderGalerie(),renderTeam()]);
-  loadAnalytics();renderDrafts();renderLogs();
-  // Charger maintenance
-  if(CFG.maintenance==='true'){
-    g('amaint').checked=true;
-    const msg=CFG.maintenance_msg||'Site en maintenance. Revenez bientôt…';
-    sv('amaint-msg',msg);
-  }
-  addLog('login','Connexion admin : '+(currentProfile?.name||currentUser?.email||''));
+  g('adm-uname').textContent=currentUser.name;
+  g('adm-urole').textContent=currentUser.role;
+  // fill fields
+  sv('a-badge',CFG.hero_badge);sv('a-tag',CFG.hero_tagline);sv('a-btn1',CFG.hero_btn1);sv('a-btn2',CFG.hero_btn2);
+  sv('a-tsq',CFG.teaser_quote);sv('a-tss',CFG.teaser_sub);
+  g('a-cddate').value=eventDate?eventDate.substring(0,16):'';
+  g('a-lkactive').checked=CFG.locked_active!=='false';
+  sv('a-lkicon',CFG.locked_icon);sv('a-lktitle',CFG.locked_title);sv('a-lksub',CFG.locked_sub);
+  sv('a-nlt',CFG.nl_title);sv('a-nls',CFG.nl_sub);sv('a-nlb',CFG.nl_btn);
+  sv('a-fbu',CFG.fb_url);sv('a-fbh',CFG.fb_handle);
+  sv('a-tku',CFG.tk_url);sv('a-tkh',CFG.tk_handle);
+  sv('a-wau',CFG.wa_url);sv('a-wah',CFG.wa_handle);
+  sv('a-ft',CFG.footer_copy);g('a-vis').value=CFG.visitors||'2847';
+  g('a-splash').checked=CFG.splash_active!=='false';
+  g('a-ee').checked=CFG.easter_active!=='false';
+  await renderAnn();await renderVilles();await renderSp();await renderNL();await renderAccounts();
   g('admin').classList.add('show');document.body.style.overflow='hidden';
 }
 
-// ══ RICH TEXT ════════════════════════════════════════
-function rtFormat(cmd){document.execCommand(cmd,false,null);}
-function rtInsert(txt){
-  const el=g('aandesc');el.focus();
-  document.execCommand('insertText',false,txt);
-}
-function getDesc(){
-  const el=g('aandesc');
-  if(!el)return '';
-  return el.innerText?.trim()||el.textContent?.trim()||'';
-}
-
-// ══ APERÇU ANNONCE ═══════════════════════════════════
-function previewAnn(){
-  const t=v('aant');const desc=getDesc();
-  const panel=g('preview-panel');const content=g('preview-content');
-  if(!t){alert('Ajoute un titre d'abord.');return;}
-  panel.style.display='block';
-  content.innerHTML=`
-    <div class="acard" style="max-width:340px;margin:0 auto;">
-      ${g('prevann').style.display!='none'?`<div class="aimg-wrap"><img src="${g('prevann').src}" class="aimg"><div class="watermark">MONO SUMMER</div></div>`:'<div class="aph">📢</div>'}
-      <div class="abody">
-        <div class="adate">${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div>
-        <div class="atitle">${t}</div>
-        <div class="adesc">${desc||'Aucune description.'}</div>
-        ${g('atags').value?`<div class="tag-wrap">${g('atags').value.split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join('')}</div>`:''}
-      </div>
-    </div>`;
-  panel.scrollIntoView({behavior:'smooth'});
-}
-
-// ══ BROUILLONS ═══════════════════════════════════════
-function saveDraft(){
-  const t=v('aant');if(!t)return;
-  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
-  drafts.unshift({id:Date.now(),title:t,date:v('aand'),desc:getDesc(),tags:v('atags'),ts:new Date().toLocaleString('fr-FR')});
-  localStorage.setItem('ms_drafts',JSON.stringify(drafts.slice(0,10)));
-  renderDrafts();
-}
-function renderDrafts(){
-  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
-  const el=g('draftslist');if(!el)return;
-  el.innerHTML=drafts.length?drafts.map((d,i)=>`
-    <div class="ali">
-      <div><div class="alit">${d.title}</div><div class="alim">${d.ts}</div></div>
-      <div class="alia">
-        <button class="bta sm ghost" onclick="loadDraft(${i})">Charger</button>
-        <button class="bta sm danger" onclick="delDraft(${i})">×</button>
-      </div>
-    </div>`).join(''):'<div style="font-size:11px;color:var(--gray);padding:10px;">Aucun brouillon.</div>';
-}
-function loadDraft(i){
-  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
-  const d=drafts[i];if(!d)return;
-  sv('aant',d.title);sv('aand',d.date);sv('atags',d.tags||'');
-  const desc=g('aandesc');if(desc)desc.innerText=d.desc||'';
-}
-function delDraft(i){
-  const drafts=JSON.parse(localStorage.getItem('ms_drafts')||'[]');
-  drafts.splice(i,1);localStorage.setItem('ms_drafts',JSON.stringify(drafts));
-  renderDrafts();
-}
-
-// ══ ANALYTICS ════════════════════════════════════════
-async function loadAnalytics(){
-  const[{count:nlCount},{count:annCount},{count:spCount},{count:galCount},{count:teamCount}]=await Promise.all([
-    sb.from('newsletter').select('*',{count:'exact',head:true}),
-    sb.from('annonces').select('*',{count:'exact',head:true}),
-    sb.from('sponsors').select('*',{count:'exact',head:true}),
-    sb.from('galerie').select('*',{count:'exact',head:true}),
-    sb.from('auth_admins').select('*',{count:'exact',head:true}),
+// ═══ SAVE FUNCTIONS ══════════════════════════════════
+async function saveHero(){
+  await Promise.all([
+    setConfig('hero_badge',v('a-badge')),setConfig('hero_tagline',v('a-tag')),
+    setConfig('hero_btn1',v('a-btn1')),setConfig('hero_btn2',v('a-btn2'))
   ]);
-  const vis=parseInt(CFG.visitors)||0;
-  const els=[['ana-vis',vis],['ana-ann',annCount||0],['ana-nl',nlCount||0],['ana-sp',spCount||0],['ana-gal',galCount||0],['ana-team',teamCount||0]];
-  els.forEach(([id,val])=>{const el=g(id);if(el)el.textContent=val;});
-  // Chart simulé - croissance abonnés
-  const bars=g('chart-bars');const lbls=g('chart-labels');
-  if(bars&&lbls){
-    const months=['Jan','Fév','Mar','Avr','Mai','Juin','Juil'];
-    const vals=[0,0,0,0,0,0,nlCount||0];
-    const max=Math.max(...vals,1);
-    bars.innerHTML=vals.map(v=>`<div class="chart-bar" style="height:${Math.max(4,Math.round(v/max*100))}%;"></div>`).join('');
-    lbls.innerHTML=months.map(m=>`<div class="chart-lbl">${m}</div>`).join('');
-  }
+  applyConfig();flash('ok-hero');
 }
-
-// ══ LOGS ══════════════════════════════════════════════
-const LOGS=[];
-function addLog(type,msg){
-  LOGS.unshift({type,msg,time:new Date().toLocaleTimeString('fr-FR')});
-  if(LOGS.length>50)LOGS.pop();
-  renderLogs();
+async function saveTeaser(){
+  await Promise.all([setConfig('teaser_quote',v('a-tsq')),setConfig('teaser_sub',v('a-tss'))]);
+  applyConfig();flash('ok-teaser');
 }
-function renderLogs(){
-  const el=g('logs-list');if(!el)return;
-  el.innerHTML=LOGS.length?LOGS.map(l=>`
-    <div class="log-item ${l.type}">
-      ${l.msg}<div class="log-time">${l.time}</div>
-    </div>`).join(''):'<div style="font-size:12px;color:var(--gray);padding:10px;">Aucune activité récente.</div>';
+async function saveCD(){
+  const val=g('a-cddate').value;if(!val)return;
+  await setConfig('event_date',new Date(val).toISOString());
+  eventDate=CFG.event_date;flash('ok-cd');
 }
-
-// ══ EXPORT CSV ════════════════════════════════════════
-async function exportCSV(){
-  const{data}=await sb.from('newsletter').select('email,created_at').order('created_at',{ascending:false});
-  if(!data||!data.length)return alert('Aucun abonné à exporter.');
-  const csv='Email,Date inscription
-'+data.map(e=>`${e.email},${e.created_at?.split('T')[0]||''}`).join('
-');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='mono-summer-abonnes.csv';a.click();
-  addLog('action','Export CSV newsletter téléchargé');
-}
-
-// ══ BACKUP ════════════════════════════════════════════
-async function backupData(){
-  const[{data:annonces},{data:villes},{data:sponsors},{data:newsletter},{data:galerie},{data:config}]=await Promise.all([
-    sb.from('annonces').select('*'),
-    sb.from('villes').select('*'),
-    sb.from('sponsors').select('*'),
-    sb.from('newsletter').select('*'),
-    sb.from('galerie').select('*'),
-    sb.from('config').select('*'),
-  ]);
-  const backup={date:new Date().toISOString(),annonces,villes,sponsors,newsletter,galerie,config};
-  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='mono-summer-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();
-  addLog('action','Backup complet téléchargé');
-}
-
-// ══ MAINTENANCE ════════════════════════════════════════
-async function toggleMaintenance(on){
-  await setConfig('maintenance',on?'true':'false');
-  if(on){
-    const msg=v('amaint-msg')||'Site en maintenance. Revenez bientôt…';
-    await setConfig('maintenance_msg',msg);
-    g('maint-msg-display').textContent=msg;
-    g('maint-overlay').classList.add('show');
-  } else {
-    g('maint-overlay').classList.remove('show');
-  }
-  addLog('action','Mode maintenance '+(on?'activé':'désactivé'));
-}
-async function saveMaint(){
-  const msg=v('amaint-msg');
-  await setConfig('maintenance_msg',msg);
-  if(g('amaint').checked){
-    g('maint-msg-display').textContent=msg;
-  }
-  flash('okmaint');
-}
-
-// ══ SAVES ═════════════════════════════════════════
-async function saveHero(){await Promise.all([setConfig('hero_badge',v('abadge')),setConfig('hero_tagline',v('atag')),setConfig('hero_btn1',v('abtn1')),setConfig('hero_btn2',v('abtn2'))]);applyConfig();flash('okhero');}
-async function saveTeaser(){await Promise.all([setConfig('teaser_quote',v('atsq')),setConfig('teaser_sub',v('atss'))]);applyConfig();flash('okteaser');}
-async function saveCD(){const val=g('acddate').value;if(!val)return;await setConfig('event_date',new Date(val).toISOString());eventDate=CFG.event_date;flash('okcd');}
-async function compressImage(file, maxSizeMB=1.5){
-  return new Promise((resolve)=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        const canvas=document.createElement('canvas');
-        let w=img.width,h=img.height;
-        // Max 1200px largeur
-        if(w>1200){h=Math.round(h*1200/w);w=1200;}
-        canvas.width=w;canvas.height=h;
-        const ctx=canvas.getContext('2d');
-        ctx.drawImage(img,0,0,w,h);
-        canvas.toBlob(blob=>resolve(new File([blob],file.name,{type:'image/jpeg'})),'image/jpeg',0.82);
-      };
-      img.src=e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 async function publishAnn(){
-  const t=v('aant'),d=v('aand');
-  if(!t||!d)return alert('Titre et date requis.');
-  
-  // Si brouillon, sauvegarder localement
-  if(g('adraft')?.checked){saveDraft();flash('okann');g('okann').textContent='💾 Brouillon sauvegardé !';return;}
-  
-  let file=g('aanimg').files[0];let imgUrl=null;
-  if(file){
-    if(!file.type.startsWith('image/')){return alert('❌ Le fichier doit être une image.');}
-    if(file.size>2*1024*1024){
-      const ld=g('ldann');ld.textContent='⚙️ Compression…';ld.classList.add('show');
-      file=await compressImage(file);ld.classList.remove('show');ld.textContent='⏳ Upload en cours…';
-    }
-    imgUrl=await uploadImg(file,'annonces','ldann');
-  }
-  
-  const desc=getDesc();
-  const tags=v('atags');
-  const{error}=await sb.from('annonces').insert({
-    title:t,date:d,description:desc,
-    image_url:imgUrl,is_breaking:g('abrk')?.checked||false
-  });
-  if(error){alert('Erreur: '+error.message);return;}
-  
-  addLog('action','Annonce publiée : '+t);
+  const t=v('a-ant'),d=v('a-and');if(!t||!d)return alert('Titre et date requis.');
+  const file=g('a-animg').files[0];
+  const imgUrl=file?await uploadImage(file,'annonces'):null;
+  await sb.from('annonces').insert({title:t,date:d,description:v('a-andesc'),image_url:imgUrl});
   await renderAnn();
-  sv('aant','');sv('aand','');sv('atags','');
-  const descEl=g('aandesc');if(descEl)descEl.innerText='';
-  g('aanimg').value='';g('prevann').style.display='none';
-  if(g('abrk'))g('abrk').checked=false;
-  if(g('adraft'))g('adraft').checked=false;
-  g('okann').textContent='✅ Annonce publiée !';
-  flash('okann');
-  g('preview-panel').style.display='none';
+  sv('a-ant','');sv('a-and','');sv('a-andesc','');g('a-animg').value='';
+  g('prev-ann').style.display='none';flash('ok-ann');
 }
 async function delAnn(id){await sb.from('annonces').delete().eq('id',id);await renderAnn();}
 async function addVille(){
-  const n=v('avn');if(!n)return;
+  const n=v('a-vn');if(!n)return;
   const{data}=await sb.from('villes').select('position').order('position',{ascending:false}).limit(1);
-  await sb.from('villes').insert({name:n,dept:v('avd')||'Mono · Bénin',position:(data?.[0]?.position||0)+1});
-  await renderVilles();sv('avn','');sv('avd','');flash('okville');
+  const pos=(data&&data[0]?data[0].position:0)+1;
+  await sb.from('villes').insert({name:n,dept:v('a-vd')||'Mono · Bénin',position:pos});
+  await renderVilles();sv('a-vn','');sv('a-vd','');flash('ok-ville');
 }
 async function delVille(id){await sb.from('villes').delete().eq('id',id);await renderVilles();}
-async function saveLocked(){await Promise.all([setConfig('locked_active',g('alkactive').checked?'true':'false'),setConfig('locked_icon',v('alkicon')),setConfig('locked_title',v('alktitle')),setConfig('locked_sub',v('alksub'))]);applyConfig();flash('oklocked');}
-async function addGalerie(){
-  const file=g('agalimg').files[0];if(!file)return alert('Choisir une image.');
-  const imgUrl=await uploadImg(file,'galerie','ldgal');if(!imgUrl)return;
-  await sb.from('galerie').insert({image_url:imgUrl,caption:v('agalcap')});
-  await renderGalerie();g('agalimg').value='';g('prevgal').style.display='none';sv('agalcap','');flash('okgal');
+async function saveLocked(){
+  await Promise.all([
+    setConfig('locked_active',g('a-lkactive').checked?'true':'false'),
+    setConfig('locked_icon',v('a-lkicon')),setConfig('locked_title',v('a-lktitle')),setConfig('locked_sub',v('a-lksub'))
+  ]);
+  applyConfig();flash('ok-locked');
 }
-async function delGal(id){await sb.from('galerie').delete().eq('id',id);await renderGalerie();}
-async function saveNL(){await Promise.all([setConfig('nl_title',v('anlt')),setConfig('nl_sub',v('anls')),setConfig('nl_btn',v('anlb'))]);applyConfig();flash('oknl');}
+async function saveNL(){
+  await Promise.all([setConfig('nl_title',v('a-nlt')),setConfig('nl_sub',v('a-nls')),setConfig('nl_btn',v('a-nlb'))]);
+  applyConfig();flash('ok-nl');
+}
 async function delNL(id){await sb.from('newsletter').delete().eq('id',id);await renderNL();}
 async function addSp(){
-  const n=v('aspn');if(!n)return;
-  const file=g('aspimg').files[0];
-  const logoUrl=file?await uploadImg(file,'sponsors','ldsp'):null;
-  await sb.from('sponsors').insert({name:n,categorie:g('aspc').value,logo_url:logoUrl});
-  await renderSp();sv('aspn','');g('aspimg').value='';g('prevsp').style.display='none';flash('oksp');
+  const n=v('a-spn');if(!n)return;
+  const file=g('a-spimg').files[0];
+  const logoUrl=file?await uploadImage(file,'sponsors'):null;
+  await sb.from('sponsors').insert({name:n,categorie:g('a-spc').value,logo_url:logoUrl});
+  await renderSp();sv('a-spn','');g('a-spimg').value='';g('prev-sp').style.display='none';flash('ok-sp');
 }
 async function delSp(id){await sb.from('sponsors').delete().eq('id',id);await renderSp();}
-async function saveSoc(){await Promise.all([setConfig('fb_url',v('afbu')),setConfig('fb_handle',v('afbh')),setConfig('tk_url',v('atku')),setConfig('tk_handle',v('atkh')),setConfig('wa_url',v('awau')),setConfig('wa_handle',v('awah'))]);applyConfig();flash('oksoc');}
-async function saveSite(){const vis=parseInt(g('avis').value)||2847;await Promise.all([setConfig('footer_copy',v('aft')),setConfig('visitors',String(vis)),setConfig('easter_active',g('aee').checked?'true':'false')]);applyConfig();flash('oksite');}
-
-// ══ INVITE ════════════════════════════════════════
-async function inviteAdmin(){
-  const email=v('invemail');if(!email||!email.includes('@'))return;
-  const name=v('invname')||email.split('@')[0];
-  // Mot de passe temporaire
-  const tmpPass='MonoSummer2025!';
-  const btn=g('invbtn');btn.disabled=true;btn.textContent='Envoi…';
-  const{error}=await sb.from('auth_admins').insert({
-    email,
-    password_plain:tmpPass,
-    name,
-    role:'Admin',
-    is_super_admin:false,
-    invited_by_email:currentProfile?.email
-  });
-  btn.disabled=false;btn.textContent="Envoyer l'invitation";
-  if(error){alert('Erreur: '+error.message);return;}
-  sv('invemail','');sv('invname','');
-  g('okinv').textContent=`✅ Admin ajouté ! Email: ${email} | Mot de passe temporaire: ${tmpPass}`;
-  flash('okinv');await renderTeam();
+async function saveSoc(){
+  await Promise.all([
+    setConfig('fb_url',v('a-fbu')),setConfig('fb_handle',v('a-fbh')),
+    setConfig('tk_url',v('a-tku')),setConfig('tk_handle',v('a-tkh')),
+    setConfig('wa_url',v('a-wau')),setConfig('wa_handle',v('a-wah'))
+  ]);
+  applyConfig();flash('ok-soc');
+}
+async function saveSite(){
+  const vis=parseInt(g('a-vis').value)||2847;
+  await Promise.all([
+    setConfig('footer_copy',v('a-ft')),setConfig('visitors',String(vis)),
+    setConfig('splash_active',g('a-splash').checked?'true':'false'),
+    setConfig('easter_active',g('a-ee').checked?'true':'false')
+  ]);
+  applyConfig();flash('ok-site');
+}
+async function changePW(){
+  const sel=g('pw-sel');const id=sel.value;const np=v('pw-new');
+  if(!np||np.length<4)return alert('Min. 4 caractères.');
+  await sb.from('admins').update({password_plain:np}).eq('id',id);
+  await renderAccounts();flash('ok-pw');sv('pw-new','');
 }
 
-// ══ NEWSLETTER ════════════════════════════════════
+// ═══ NEWSLETTER SUBSCRIBE ════════════════════════════
 async function nlSubmit(){
-  const email=g('nlemail').value.trim();
-  if(!email||!email.includes('@'))return alert('Email invalide.');
-  // Vérification CAPTCHA
-  const ans=parseInt(g('captcha-ans')?.value||'0');
-  if(ans!==captchaA+captchaB){
-    alert('❌ Réponse incorrecte. Réessaye.');genCaptcha();return;
-  }
+  const email=g('nl-email').value.trim();
+  if(!email||!email.includes('@'))return;
   const{error}=await sb.from('newsletter').insert({email});
-  if(error){
-    if(error.code==='23505'){alert('Cet email est déjà inscrit !');}
-    else{alert('Erreur: '+error.message);}
-    genCaptcha();return;
+  if(!error){
+    sv('nl-email','');
+    const ok=g('nl-ok');ok.classList.add('show');setTimeout(()=>ok.classList.remove('show'),4000);
   }
-  sv('nlemail','');genCaptcha();
-  const ok=g('nlok');ok.classList.add('show');
-  setTimeout(()=>ok.classList.remove('show'),4000);
-  addLog('action','Nouvel abonné newsletter: '+email);
 }
 
-// ══ SHARE ═════════════════════════════════════════
-const shareWA=t=>window.open(`https://wa.me/?text=🔥 MONO SUMMER — ${decodeURIComponent(t)}%0A%0Ale Mono cache bien son jeu... Rejoins le mouvement !`,'_blank');
-const shareFB=()=>window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,'_blank');
-
-// ══ CONFIRM DELETE ════════════════════════════════
-function confirmDel(fn){
-  const bg=g('cfbg');bg.classList.add('show');
-  g('cfok').onclick=()=>{bg.classList.remove('show');fn();};
-}
-
-// ══ EASTER EGG ════════════════════════════════════
+// ═══ EASTER EGG ══════════════════════════════════════
 let eeBuf='';
 document.addEventListener('keydown',e=>{
   if(!eeActive)return;
-  eeBuf+=e.key.toUpperCase();if(eeBuf.length>4)eeBuf=eeBuf.slice(-4);
+  eeBuf+=e.key.toUpperCase();
+  if(eeBuf.length>4)eeBuf=eeBuf.slice(-4);
   if(eeBuf==='MONO'){g('easter').classList.add('show');setTimeout(()=>g('easter').classList.remove('show'),5000);eeBuf='';}
 });
 
-// ══ VISITORS ══════════════════════════════════════
+// ═══ INCREMENT VISITORS ══════════════════════════════
 async function incVisitors(){
   const cur=parseInt(CFG.visitors)||2847;
-  await setConfig('visitors',String(cur+1));applyConfig();
+  await setConfig('visitors',String(cur+1));
+  applyConfig();
 }
 
-// ══ INIT ══════════════════════════════════════════
+// ═══ INIT ════════════════════════════════════════════
 window.addEventListener('load',async()=>{
-  // Appliquer les valeurs par défaut immédiatement
-  applyConfig();
-  updateCD();
-  animateTitle();
+  // Splash
+  setTimeout(()=>{
+    const sp=g('splash');sp.classList.add('out');
+    setTimeout(()=>sp.style.display='none',800);
+  },3200);
+
+  await loadConfig();
+  await renderAnn();
+  await renderVilles();
+  await renderSp();
+  updateCD();setInterval(updateCD,1000);
   watchReveal();
-  genCaptcha();
-
-  // Charger depuis Supabase en arrière-plan
-  loadConfig().then(()=>{
-    renderAnn();
-    renderVilles();
-    renderSp();
-    renderGalerie();
-    renderFaq();
-    incVisitors();
-  }).catch(e=>console.warn('Supabase error:',e));
-
-  // Lancer le countdown immédiatement
-  setInterval(updateCD,1000);
-
-  if(false){// placeholder pour supprimer le try suivant
-
-  }
-  checkAnnHash();
+  incVisitors();
 });
 </script>
 </body>
