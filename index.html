@@ -1165,17 +1165,42 @@ const toggleMenu=()=>{const h=g('hbg'),m=g('mmenu');h.classList.toggle('open');m
 const closeMenu=()=>{g('hbg').classList.remove('open');g('mmenu').classList.remove('open');document.body.style.overflow='';};
 
 // ══ CONFIG ════════════════════════════════════════
-let CFG={},eventDate=new Date(Date.now()+70*864e5).toISOString(),currentUser=null,currentProfile=null,eeActive=true;
+let CFG={
+  hero_badge:'Bénin · Département du Mono · 2025',
+  hero_tagline:'Le Mono cache bien son jeu…',
+  hero_btn1:'⚡ Rejoindre le mouvement',
+  hero_btn2:'Voir les annonces →',
+  teaser_quote:'Le Mono cache bien son jeu…',
+  teaser_sub:"Un événement 4× plus grand que d'habitude. Ne reste pas dans l'ombre.",
+  locked_active:'true',
+  locked_icon:'🔒',
+  locked_title:'CONTENU BIENTÔT RÉVÉLÉ',
+  locked_sub:'Certaines informations sont encore gardées secrètes.',
+  nl_title:'SOIS LE PREMIER À SAVOIR',
+  nl_sub:"Abonne-toi pour ne rien manquer. Le Mono Summer arrive.",
+  nl_btn:"S'abonner",
+  fb_url:'https://www.facebook.com/share/1br1FJ18Mx/?mibextid=wwXIfr',
+  fb_handle:'@MonoSummer',
+  tk_url:'https://www.tiktok.com/@mono.summer?_r=1&_t=ZS-94UHQQE2zZJ',
+  tk_handle:'@mono.summer',
+  wa_url:'https://whatsapp.com/channel/0029VbCE7mZ0bIdnaAT6Bf2k',
+  wa_handle:'Canal Officiel',
+  footer_copy:'© 2025 MONO SUMMER — Bénin 🇧🇯',
+  visitors:'2847',
+  easter_active:'true',
+  maintenance:'false'
+},eventDate=new Date(Date.now()+70*864e5).toISOString(),currentUser=null,currentProfile=null,eeActive=true;
 
 async function loadConfig(){
-  const{data}=await sb.from('config').select('*');
-  if(data)data.forEach(r=>{CFG[r.key]=r.value;});
+  try{
+    const{data}=await sb.from('config').select('*');
+    if(data)data.forEach(r=>{CFG[r.key]=r.value;});
+  }catch(e){console.warn('Config load failed, using defaults');}
   applyConfig();
-  // Mode maintenance (pas pour les admins)
   if(CFG.maintenance==='true'&&!currentUser){
     const msg=CFG.maintenance_msg||'Site en maintenance. Revenez bientôt…';
-    g('maint-msg-display').textContent=msg;
-    g('maint-overlay').classList.add('show');
+    if(g('maint-msg-display'))g('maint-msg-display').textContent=msg;
+    if(g('maint-overlay'))g('maint-overlay').classList.add('show');
   }
 }
 async function setConfig(key,value){
@@ -1753,22 +1778,30 @@ async function incVisitors(){
 
 // ══ INIT ══════════════════════════════════════════
 window.addEventListener('load',async()=>{
-  try {
-    await loadConfig();
-  } catch(e){ console.error('loadConfig error:',e); }
-
-  try { await renderAnn(); } catch(e){ console.error('renderAnn:',e); }
-  try { await renderVilles(); } catch(e){ console.error('renderVilles:',e); }
-  try { await renderSp(); } catch(e){ console.error('renderSp:',e); }
-  try { await renderGalerie(); } catch(e){ console.error('renderGalerie:',e); }
-
-  updateCD(); setInterval(updateCD,1000);
+  // Appliquer les valeurs par défaut immédiatement
+  applyConfig();
+  updateCD();
+  animateTitle();
   watchReveal();
-  try { incVisitors(); } catch(e){}
-  try { animateTitle(); } catch(e){}
-  checkAnnHash();
   genCaptcha();
-  try { renderFaq(); } catch(e){}
+
+  // Charger depuis Supabase en arrière-plan
+  loadConfig().then(()=>{
+    renderAnn();
+    renderVilles();
+    renderSp();
+    renderGalerie();
+    renderFaq();
+    incVisitors();
+  }).catch(e=>console.warn('Supabase error:',e));
+
+  // Lancer le countdown immédiatement
+  setInterval(updateCD,1000);
+
+  if(false){// placeholder pour supprimer le try suivant
+
+  }
+  checkAnnHash();
 });
 </script>
 </body>
