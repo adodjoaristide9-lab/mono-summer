@@ -29,19 +29,7 @@ body.ch #cur-r{width:52px;height:52px;border-color:rgba(0,255,136,.6);}
 /* PROGRESS */
 #prog{position:fixed;top:0;left:0;height:2px;background:var(--neon);box-shadow:0 0 8px var(--neon);z-index:9997;width:0;transition:width .08s;}
 
-/* SPLASH */
-#splash{position:fixed;inset:0;z-index:99990;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .8s,visibility .8s;}
-#splash.out{opacity:0;visibility:hidden;pointer-events:none;}
-.sp-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,13vw,140px);line-height:.9;text-align:center;letter-spacing:-2px;}
-.sp-logo em{color:var(--neon);font-style:normal;display:block;text-shadow:0 0 60px rgba(0,255,136,.4);}
-.sp-tag{font-family:'Syne',sans-serif;font-size:clamp(10px,2vw,14px);color:rgba(240,240,240,.3);letter-spacing:5px;text-transform:uppercase;}
-.sp-bar{width:160px;height:1px;background:var(--dark3);overflow:hidden;margin-top:8px;}
-.sp-fill{height:100%;width:0;background:var(--neon);box-shadow:0 0 10px var(--neon);animation:spfill 2.8s ease forwards;}
-@keyframes spfill{to{width:100%;}}
-.sp-dots{display:flex;gap:7px;}
-.sp-dot{width:4px;height:4px;border-radius:50%;background:var(--neon);animation:sdot 1.2s ease-in-out infinite;}
-.sp-dot:nth-child(2){animation-delay:.2s;}.sp-dot:nth-child(3){animation-delay:.4s;}
-@keyframes sdot{0%,100%{opacity:.2;transform:scale(1);}50%{opacity:1;transform:scale(1.4);}}
+50%{opacity:1;transform:scale(1.4);}}
 
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:18px 48px;display:flex;justify-content:space-between;align-items:center;transition:all .3s;}
@@ -368,10 +356,6 @@ select.fc option{background:var(--dark3);}
 <div id="cur"></div><div id="cur-r"></div>
 <div id="prog"></div>
 
-<!-- SPLASH -->
-<div id="splash">
-  <span style="font-size:40px;animation:eblink 4s infinite;">👁️</span>
-  <div class="sp-logo">MONO<em>SUMMER</em></div>
   <div class="sp-tag">Le Mono cache bien son jeu…</div>
   <div class="sp-bar"><div class="sp-fill"></div></div>
   <div class="sp-dots"><div class="sp-dot"></div><div class="sp-dot"></div><div class="sp-dot"></div></div>
@@ -1099,7 +1083,6 @@ async function openAdmin(){
   sv('a-tku',CFG.tk_url);sv('a-tkh',CFG.tk_handle);
   sv('a-wau',CFG.wa_url);sv('a-wah',CFG.wa_handle);
   sv('a-ft',CFG.footer_copy);g('a-vis').value=CFG.visitors||'2847';
-  g('a-splash').checked=CFG.splash_active!=='false';
   g('a-ee').checked=CFG.easter_active!=='false';
   await renderAnn();await renderVilles();await renderSp();await renderNL();await renderAccounts();
   g('admin').classList.add('show');document.body.style.overflow='hidden';
@@ -1172,7 +1155,6 @@ async function saveSite(){
   const vis=parseInt(g('a-vis').value)||2847;
   await Promise.all([
     setConfig('footer_copy',v('a-ft')),setConfig('visitors',String(vis)),
-    setConfig('splash_active',g('a-splash').checked?'true':'false'),
     setConfig('easter_active',g('a-ee').checked?'true':'false')
   ]);
   applyConfig();flash('ok-site');
@@ -1213,12 +1195,6 @@ async function incVisitors(){
 
 // ═══ INIT ════════════════════════════════════════════
 window.addEventListener('load',async()=>{
-  // Splash
-  setTimeout(()=>{
-    const sp=g('splash');sp.classList.add('out');
-    setTimeout(()=>sp.style.display='none',800);
-  },3200);
-
   await loadConfig();
   await renderAnn();
   await renderVilles();
